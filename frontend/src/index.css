@@ -1,0 +1,317 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=VT323&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base:        #fdfbf7;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #ffffff;
+  --bg-border:      #000000;
+  --text-primary:   #000000;
+  --text-secondary: #404040;
+  --text-muted:     #737373;
+  --accent:         #bbf7d0;
+  --accent-dim:     #f0fdf4;
+  --accent-hover:   #86efac;
+  --success:        #93c5fd;
+  --success-dim:    #eff6ff;
+  --danger:         #fca5a5;
+  --danger-dim:     #fef2f2;
+  --warning:        #fde047;
+  --warning-dim:    #fefce8;
+  --mono:           "JetBrains Mono", "Fira Code", "Courier New", monospace;
+  --font-display:   "Syne", sans-serif;
+  --font-body:      "DM Sans", sans-serif;
+  --font-pixel:     "VT323", monospace;
+  --font-hand:      "Caveat", cursive;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrapbook background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('/bg-landscape.png');
+  background-size: cover;
+  background-position: center bottom;
+  opacity: 0.85; /* Keep it subtle enough for text */
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Typography Classes ── */
+.font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
+.font-pixel { font-family: var(--font-pixel); }
+.font-hand { font-family: var(--font-hand); }
+
+/* ── Sticker Brutalist classes ── */
+.sticker {
+  background: white;
+  border: 3px solid black;
+  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  padding: 4px 12px;
+  display: inline-block;
+  transform: rotate(-1deg);
+}
+
+.sticker-rotate {
+  transform: rotate(2deg);
+}
+
+.brutalist-card {
+  background: white;
+  border: 3px solid black;
+  box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+  transition: all 0.2s ease-out;
+}
+.brutalist-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
+}
+
+.brutalist-btn {
+  border: 3px solid black;
+  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  transition: all 0.1s ease-out;
+}
+.brutalist-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+}
+
+/* Monospace for ALL numbers */
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ── Animated number flash on update ── */
+@keyframes flash-green {
+  0%   { color: var(--success); text-shadow: 0 0 8px rgba(34,197,94,0.4); }
+  100% { color: var(--text-primary); text-shadow: none; }
+}
+@keyframes flash-red {
+  0%   { color: var(--danger); text-shadow: 0 0 8px rgba(239,68,68,0.4); }
+  100% { color: var(--text-primary); text-shadow: none; }
+}
+.flash-success { animation: flash-green 1.5s ease-out; }
+.flash-danger  { animation: flash-red 1.5s ease-out; }
+
+/* ── Scanline texture overlay ── */
+.scanlines {
+  position: relative;
+}
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--bg-elevated) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* ── Pulse animation for live dots ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+.pulse-dot {
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Spinner ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Toast slide-in ── */
+@keyframes slide-in-right {
+  0%   { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes slide-out-right {
+  0%   { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+.toast-enter { animation: slide-in-right 0.3s ease-out forwards; }
+.toast-exit  { animation: slide-out-right 0.3s ease-in forwards; }
+
+/* ── Utilisation bar fill animation ── */
+@keyframes grow-width {
+  0%   { width: 0%; }
+}
+.animate-grow {
+  animation: grow-width 0.6s ease-out forwards;
+}
+
+/* ── Arc gauge animation ── */
+@keyframes draw-arc {
+  0%   { stroke-dashoffset: var(--arc-circumference); }
+}
+.animate-arc {
+  animation: draw-arc 0.8s ease-out forwards;
+}
+
+/* ── Score pulse on zero ── */
+@keyframes score-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+/* ── Card Styles ── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--bg-border), 0 4px 24px rgba(0,0,0,0.4);
+}
+
+.card-danger {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px var(--danger), 0 4px 24px rgba(0,0,0,0.4), 0 0 20px rgba(239,68,68,0.1);
+}
+
+/* ── Glow shadows ── */
+.glow-accent  { box-shadow: 0 0 20px rgba(99,102,241,0.15); }
+.glow-success { box-shadow: 0 0 20px rgba(34,197,94,0.15); }
+.glow-danger  { box-shadow: 0 0 20px rgba(239,68,68,0.15); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ── Selection ── */
+::selection {
+  background: rgba(99,102,241,0.3);
+  color: var(--text-primary);
+}
+
+/* ── Input reset ── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input:focus, button:focus-visible {
+  outline: none;
+}
+
+/* ── Floating particles for landing page ── */
+@keyframes float-particle {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.15;
+  }
+  25% {
+    transform: translate(15px, -30px) scale(1.2);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-10px, -50px) scale(0.8);
+    opacity: 0.1;
+  }
+  75% {
+    transform: translate(20px, -25px) scale(1.1);
+    opacity: 0.25;
+  }
+}
+
+/* ── Hero gradient glow ── */
+.hero-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(99,102,241,0.08) 0%,
+    rgba(99,102,241,0.02) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ── Card hover glow ── */
+.card:hover {
+  box-shadow: 0 0 0 1px var(--bg-border), 0 4px 24px rgba(0,0,0,0.5), 0 0 30px rgba(99,102,241,0.05);
+}
+
+/* ── Smooth page transitions ── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
