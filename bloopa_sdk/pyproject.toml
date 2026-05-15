@@ -5,20 +5,36 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bloopa-sdk"
 version = "0.1.0"
-description = "LLM-gated credit SDK for the Bloopa AI agent protocol on Algorand"
-readme = "README_SKILL.md"
+description = "LLM-gated credit SDK for the Bloopa AI agent credit protocol on Algorand"
+readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [
   { name = "Bloopa", email = "build@bloopa.xyz" }
 ]
-keywords = ["algorand", "ai-agents", "credit", "defi", "llm", "m2m"]
+keywords = [
+  "algorand",
+  "ai-agents",
+  "credit",
+  "defi",
+  "llm",
+  "machine-to-machine",
+  "m2m",
+  "venice",
+  "anthropic",
+  "risk-oracle",
+]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "Topic :: Software Development :: Libraries",
+
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Office/Business :: Financial",
+  "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Typing :: Typed",
 ]
 dependencies = [
   "py-algorand-sdk>=2.7.0",
@@ -34,16 +50,20 @@ anthropic = [
 dev = [
   "pytest>=8.0.0",
   "pytest-mock>=3.14.0",
+  "build>=1.2.0",
+  "twine>=5.0.0",
 ]
 
 [project.urls]
 Homepage = "https://bloopa.xyz"
+Documentation = "https://github.com/ShahiTechnovation/Bloopa/blob/main/bloopa_sdk/README.md"
 Repository = "https://github.com/ShahiTechnovation/Bloopa"
 "Bug Tracker" = "https://github.com/ShahiTechnovation/Bloopa/issues"
+Changelog = "https://github.com/ShahiTechnovation/Bloopa/blob/main/bloopa_sdk/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = [".."]
 include = ["bloopa_sdk*"]
 
 [tool.setuptools.package-data]
-bloopa_sdk = ["py.typed"]
+bloopa_sdk = ["py.typed", "README.md", "CHANGELOG.md"]

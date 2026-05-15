@@ -1,11 +1,96 @@
-.env
-.venv/
-__pycache__/
-node_modules/
-dist/
-build/
-.DS_Store
-*.pyc
+# =============================================================================
+#  Bloopa — .gitignore
+# =============================================================================
 
-.vercel
-.env*.local
+# ── Secrets & credentials ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+MANIFEST
+*.manifest
+*.spec
+*.log
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test & coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
+pyrightconfig.json   # keep if checked in intentionally — remove this line then
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+.npm/
+.pnp/
+.pnp.js
+.yarn-integrity
+
+# Build outputs
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Algorand / Contract ───────────────────────────────────────────────────────
+*.arc4.json
+artifacts/
+.algokit/
+.algokit_cache/
+sandbox/
+algod_data/
+
+# ── Vercel / Deployment ───────────────────────────────────────────────────────
+.vercel/
+.netlify/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+.project
+.classpath
+.settings/

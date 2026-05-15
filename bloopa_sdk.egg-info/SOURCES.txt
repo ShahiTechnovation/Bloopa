@@ -1,5 +1,9 @@
+LICENSE
+README.md
 README_SKILL.md
 pyproject.toml
+../bloopa_sdk/CHANGELOG.md
+../bloopa_sdk/README.md
 ../bloopa_sdk/__init__.py
 ../bloopa_sdk/agent.py
 ../bloopa_sdk/chain.py
@@ -13,3 +17,11 @@ pyproject.toml
 ../bloopa_sdk.egg-info/dependency_links.txt
 ../bloopa_sdk.egg-info/requires.txt
 ../bloopa_sdk.egg-info/top_level.txt
+../bloopa_sdk/bloopa_sdk/__init__.py
+../bloopa_sdk/bloopa_sdk/agent.py
+../bloopa_sdk/bloopa_sdk/chain.py
+../bloopa_sdk/bloopa_sdk/criteria.py
+../bloopa_sdk/bloopa_sdk/exceptions.py
+../bloopa_sdk/bloopa_sdk/hash_util.py
+../bloopa_sdk/bloopa_sdk/oracle.py
+../bloopa_sdk/bloopa_sdk/py.typed
