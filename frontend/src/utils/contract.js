@@ -5,10 +5,10 @@
  * ABI_METHODS mirror contract.py method signatures exactly.
  */
 
-export const APP_ID = 758773023;
+export const APP_ID = 762466410;
 
 export const APP_ADDRESS =
-  "6TTAV5TV7LPF2D33NEUXK3BZIFFRLVZ6TIDCQ5TOOE5KBBGHK3D55FPR5M";
+  "Z2AJEBCQBWD5VOYVYIE3LUCCFVRY2H2ZMHAQEEG34ZKCNH7NACTXBGGGQY";
 
 export const TESTNET_ALGOD = "https://testnet-api.algonode.cloud";
 
@@ -30,7 +30,10 @@ export const ABI_METHODS = {
   },
   draw: {
     name: "draw",
-    args: [{ type: "uint64", name: "amount" }],
+    args: [
+      { type: "uint64", name: "amount" },
+      { type: "byte[32]", name: "attestation_hash" },
+    ],
     returns: { type: "void" },
   },
   repay: {
@@ -47,7 +50,7 @@ export const ABI_METHODS = {
     name: "get_position",
     args: [{ type: "address", name: "agent" }],
     returns: {
-      type: "(uint64,uint64,uint64,uint64,uint64)",
+      type: "(uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64)",
     },
   },
 };

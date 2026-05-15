@@ -1,0 +1,9 @@
+{
+  "exclude": [
+    "contracts",
+    "bloopa_sdk",
+    "test_oracle.py",
+    "contract.py"
+  ],
+  "reportMissingModuleSource": "none"
+}

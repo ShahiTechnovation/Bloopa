@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bloopa-sdk"
+version = "0.1.0"
+description = "LLM-gated credit SDK for the Bloopa AI agent protocol on Algorand"
+readme = "README_SKILL.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+  { name = "Bloopa", email = "build@bloopa.xyz" }
+]
+keywords = ["algorand", "ai-agents", "credit", "defi", "llm", "m2m"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "py-algorand-sdk>=2.7.0",
+  "openai>=1.0.0",
+  "pydantic>=2.0.0",
+  "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+anthropic = [
+  "anthropic>=0.42.0",
+]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-mock>=3.14.0",
+]
+
+[project.urls]
+Homepage = "https://bloopa.xyz"
+Repository = "https://github.com/ShahiTechnovation/Bloopa"
+"Bug Tracker" = "https://github.com/ShahiTechnovation/Bloopa/issues"
+
+[tool.setuptools.packages.find]
+where = [".."]
+include = ["bloopa_sdk*"]
+
+[tool.setuptools.package-data]
+bloopa_sdk = ["py.typed"]

@@ -8,7 +8,7 @@
  *   D. Slash Agent (bottom-right, danger zone)
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useWallet } from "../context/WalletContext.jsx";
 import { useContract } from "../context/ContractContext.jsx";
 import { useToast } from "./ui/Toast.jsx";
@@ -49,37 +49,42 @@ function UtilisationBar({ percent }) {
   );
 }
 
+/* ── Tier badge ── */
+const TIER_LABELS = ["Fresh", "Trusted", "Veteran", "Elite"];
+const TIER_COLORS = ["var(--text-muted)", "var(--accent)", "var(--warning)", "var(--success)"];
+const TIER_THRESHOLDS = [0, 10, 50, 100];
+
+function TierBadge({ tier }) {
+  const idx = Number(tier);
+  return (
+    <span
+      className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full"
+      style={{
+        color: TIER_COLORS[idx],
+        background: `${TIER_COLORS[idx]}22`,
+        border: `1px solid ${TIER_COLORS[idx]}44`,
+      }}
+    >
+      T{idx} · {TIER_LABELS[idx]}
+    </span>
+  );
+}
+
 /* ── Position Overview Card ── */
 function PositionCard({ position, isLoading }) {
-  const stake = fmtAlgo(position.stake);
-  const creditLimit = fmtAlgo(position.creditLimit);
-  const outstanding = fmtAlgo(position.outstanding);
-  const available = fmtAlgo(position.creditLimit - position.outstanding);
+  const stake        = fmtAlgo(position.stake);
+  const tierMaxDraw  = fmtAlgo(position.tierMaxDraw);
+  const outstanding  = fmtAlgo(position.outstanding);
+  const dailyDrawn   = fmtAlgo(position.dailyDrawn);
+  const dailyRemain  = position.tierMaxDraw > position.dailyDrawn
+    ? fmtAlgo(position.tierMaxDraw - position.dailyDrawn)
+    : "0.000000";
+  const aprPct       = Number(position.aprBps) / 100;
+
   const utilization =
-    position.creditLimit > 0n
-      ? Number((position.outstanding * 100n) / position.creditLimit)
+    position.tierMaxDraw > 0n
+      ? Number((position.dailyDrawn * 100n) / position.tierMaxDraw)
       : 0;
-
-  const prevLimitRef = useRef(creditLimit);
-  const prevOutRef = useRef(outstanding);
-  const [limitFlash, setLimitFlash] = useState("");
-  const [outFlash, setOutFlash] = useState("");
-
-  useEffect(() => {
-    if (prevLimitRef.current !== creditLimit) {
-      setLimitFlash("flash-success");
-      setTimeout(() => setLimitFlash(""), 1500);
-      prevLimitRef.current = creditLimit;
-    }
-  }, [creditLimit]);
-
-  useEffect(() => {
-    if (prevOutRef.current !== outstanding) {
-      setOutFlash(position.outstanding > 0n ? "flash-danger" : "flash-success");
-      setTimeout(() => setOutFlash(""), 1500);
-      prevOutRef.current = outstanding;
-    }
-  }, [outstanding, position.outstanding]);
 
   if (isLoading) {
     return (
@@ -101,12 +106,15 @@ function PositionCard({ position, isLoading }) {
     >
       {/* Header row */}
       <div className="flex items-center justify-between mb-6">
-        <span
-          className="text-[11px] font-sans font-medium uppercase tracking-[0.1em]"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          Agent Position
-        </span>
+        <div className="flex items-center gap-3">
+          <span
+            className="text-[11px] font-sans font-medium uppercase tracking-[0.1em]"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Agent Position
+          </span>
+          <TierBadge tier={position.tier} />
+        </div>
         <div className="flex items-center gap-2">
           <span
             className="w-2 h-2 rounded-full"
@@ -129,10 +137,10 @@ function PositionCard({ position, isLoading }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
         <div>
           <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-1" style={{ color: "var(--text-secondary)" }}>
-            Credit Limit
+            Draw Cap (per draw)
           </p>
-          <p className={`num text-[28px] font-semibold text-[var(--text-primary)] leading-tight ${limitFlash}`}>
-            {creditLimit}
+          <p className="num text-[28px] font-semibold text-[var(--text-primary)] leading-tight">
+            {tierMaxDraw}
           </p>
           <p className="text-[11px] font-mono uppercase" style={{ color: "var(--text-muted)" }}>ALGO</p>
         </div>
@@ -140,24 +148,30 @@ function PositionCard({ position, isLoading }) {
           <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-1" style={{ color: "var(--text-secondary)" }}>
             Outstanding
           </p>
-          <p className={`num text-[28px] font-semibold text-[var(--text-primary)] leading-tight ${outFlash}`}>
+          <p className="num text-[28px] font-semibold text-[var(--text-primary)] leading-tight">
             {outstanding}
           </p>
           <p className="text-[11px] font-mono uppercase" style={{ color: "var(--text-muted)" }}>ALGO</p>
         </div>
         <div>
           <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-1" style={{ color: "var(--text-secondary)" }}>
-            Available
+            Daily Remaining
           </p>
           <p className="num text-[28px] font-semibold leading-tight" style={{ color: "var(--success)" }}>
-            {available}
+            {dailyRemain}
           </p>
           <p className="text-[11px] font-mono uppercase" style={{ color: "var(--text-muted)" }}>ALGO</p>
         </div>
       </div>
 
-      {/* Utilisation bar */}
-      <UtilisationBar percent={utilization} />
+      {/* Daily utilisation bar */}
+      <div className="mb-2">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-sans uppercase" style={{ color: "var(--text-muted)" }}>Daily drawn</span>
+          <span className="num text-[10px]" style={{ color: "var(--text-secondary)" }}>{dailyDrawn} / {tierMaxDraw} ALGO</span>
+        </div>
+        <UtilisationBar percent={utilization} />
+      </div>
 
       {/* Secondary metrics */}
       <div className="grid grid-cols-2 gap-4 mt-6 pt-6" style={{ borderTop: "1px solid var(--bg-border)" }}>
@@ -171,10 +185,26 @@ function PositionCard({ position, isLoading }) {
         </div>
         <div>
           <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-1" style={{ color: "var(--text-secondary)" }}>
+            APR
+          </p>
+          <p className="num text-lg font-semibold text-[var(--text-primary)]">
+            {aprPct.toFixed(0)}% <span className="text-xs" style={{ color: "var(--text-muted)" }}>({Number(position.aprBps)} bps)</span>
+          </p>
+        </div>
+        <div>
+          <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-1" style={{ color: "var(--text-secondary)" }}>
             Payments Made
           </p>
           <p className="num text-lg font-semibold text-[var(--text-primary)]">
             {position.paymentCount.toString()} <span className="text-xs" style={{ color: "var(--text-muted)" }}>payments</span>
+          </p>
+        </div>
+        <div>
+          <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-1" style={{ color: "var(--text-secondary)" }}>
+            Repay By Round
+          </p>
+          <p className="num text-lg font-semibold" style={{ color: position.repayByRound > 0n ? "var(--warning)" : "var(--text-muted)" }}>
+            {position.repayByRound > 0n ? `#${position.repayByRound.toString()}` : "—"}
           </p>
         </div>
       </div>
@@ -206,8 +236,8 @@ export default function Dashboard() {
 
   const [activeAction, setActiveAction] = useState(null);
 
-  // Computed values
-  const available = Number(position.creditLimit - position.outstanding) / 1e6;
+  // Computed values — V2: daily remaining instead of creditLimit-outstanding
+  const available      = Number(position.tierMaxDraw - position.dailyDrawn) / 1e6;
   const outstandingNum = Number(position.outstanding) / 1e6;
 
   // --- Action Handlers ---
@@ -277,10 +307,11 @@ export default function Dashboard() {
     setActiveAction(null);
   };
 
-  // Pre-computed previews
   const recordAmt = parseFloat(recordInput) || 0;
-  const currentLimitAlgo = Number(position.creditLimit) / 1e6;
-  const afterPaymentLimit = currentLimitAlgo + (recordAmt > 0 ? 0.5 : 0); // approx +0.5 per payment
+  // Approximate: each payment nudges the tier threshold toward next tier
+  const paymentsToNextTier = TIER_THRESHOLDS[Math.min(Number(position.tier) + 1, 3)];
+  const afterPaymentLimit  = Number(position.tierMaxDraw) / 1e6; // stays same until tier up
+  const currentLimitAlgo   = afterPaymentLimit;
 
   const repayAmt = parseFloat(repayInput) || 0;
   const outAfterRepay = Math.max(0, outstandingNum - repayAmt);
@@ -307,23 +338,24 @@ export default function Dashboard() {
             placeholder="0.000000"
           />
 
-          {/* Live preview */}
+          {/* Live preview — show tier progress */}
           {recordAmt > 0 && (
             <div className="mt-3 rounded-[8px] px-3 py-2.5 text-xs space-y-1" style={{ background: "var(--accent-dim)", border: "1px solid rgba(99,102,241,0.15)" }}>
               <div className="flex justify-between">
-                <span className="font-sans text-[var(--text-secondary)]">Current limit</span>
-                <span className="num text-[var(--text-primary)]">{currentLimitAlgo.toFixed(6)} ALGO</span>
+                <span className="font-sans text-[var(--text-secondary)]">Payments recorded</span>
+                <span className="num text-[var(--text-primary)]">{position.paymentCount.toString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-sans text-[var(--text-secondary)]">After payment</span>
-                <span className="num" style={{ color: "var(--success)" }}>{afterPaymentLimit.toFixed(6)} ALGO</span>
+                <span className="font-sans text-[var(--text-secondary)]">Next tier at</span>
+                <span className="num" style={{ color: "var(--accent)" }}>{paymentsToNextTier} payments</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-sans text-[var(--text-secondary)]">Δ change</span>
-                <span className="num" style={{ color: "var(--accent)" }}>+0.500000 ALGO</span>
+                <span className="font-sans text-[var(--text-secondary)]">Draw cap</span>
+                <span className="num" style={{ color: "var(--success)" }}>{currentLimitAlgo.toFixed(6)} ALGO / draw</span>
               </div>
             </div>
           )}
+
 
           <Button
             id="record-button"
@@ -424,13 +456,13 @@ export default function Dashboard() {
                 <span className="font-sans" style={{ color: "var(--text-secondary)" }}>After repay</span>
                 <span className="num" style={{ color: "var(--success)" }}>{outAfterRepay.toFixed(6)} ALGO</span>
               </div>
-              {/* Before bar */}
+              {/* Before/after outstanding bars */}
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-sans w-10" style={{ color: "var(--text-muted)" }}>Before</span>
                   <div className="flex-1 h-1 rounded-full" style={{ background: "var(--bg-elevated)" }}>
                     <div className="h-full rounded-full transition-all duration-300" style={{
-                      width: `${position.creditLimit > 0n ? Number((position.outstanding * 100n) / position.creditLimit) : 0}%`,
+                      width: `${position.tierMaxDraw > 0n ? Number((position.outstanding * 100n) / position.tierMaxDraw) : 0}%`,
                       background: "var(--warning)",
                     }} />
                   </div>
@@ -439,7 +471,7 @@ export default function Dashboard() {
                   <span className="text-[10px] font-sans w-10" style={{ color: "var(--text-muted)" }}>After</span>
                   <div className="flex-1 h-1 rounded-full" style={{ background: "var(--bg-elevated)" }}>
                     <div className="h-full rounded-full transition-all duration-300" style={{
-                      width: `${position.creditLimit > 0n ? Math.max(0, Number(BigInt(Math.round(outAfterRepay * 1e6)) * 100n / position.creditLimit)) : 0}%`,
+                      width: `${position.tierMaxDraw > 0n ? Math.max(0, Number(BigInt(Math.round(outAfterRepay * 1e6)) * 100n / position.tierMaxDraw)) : 0}%`,
                       background: "var(--success)",
                     }} />
                   </div>

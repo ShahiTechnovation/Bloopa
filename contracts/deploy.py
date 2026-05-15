@@ -103,10 +103,10 @@ print(f"Clear program:    {len(clear_bytes)} bytes")
 # STEP 5 — State schema (must match contract.py)
 # ──────────────────────────────────────────────
 
-# Bloopa local state:  7 × uint64, 0 × bytes
-# Bloopa global state: 2 × uint64, 0 × bytes
-global_schema = transaction.StateSchema(num_uints=2, num_byte_slices=0)
-local_schema = transaction.StateSchema(num_uints=7, num_byte_slices=0)
+# Bloopa local state:  9 × uint64, 0 × bytes
+# Bloopa global state: 3 × uint64, 1 × bytes
+global_schema = transaction.StateSchema(num_uints=3, num_byte_slices=1)
+local_schema = transaction.StateSchema(num_uints=9, num_byte_slices=0)
 
 # ──────────────────────────────────────────────
 # STEP 6 — Deploy with idempotency check
@@ -220,13 +220,31 @@ if current_balance < TARGET_TREASURY:
         sp=sp,
         receiver=APP_ADDRESS,
         amt=fund_amount,
-        note=b"Bloopa treasury seed",
     )
-    signed_fund = fund_txn.sign(deployer_private_key)
-    fund_tx_id = algod_client.send_transaction(signed_fund)
-    wait_for_confirmation(algod_client, fund_tx_id)
-    print(f"Funded contract with {fund_amount} microALGO")
-    print(f"   Treasury txn: {fund_tx_id}")
+    
+    # We must use seed_treasury method to update the global state tracking
+    from algosdk.atomic_transaction_composer import (
+        AtomicTransactionComposer,
+        TransactionWithSigner,
+        AccountTransactionSigner,
+    )
+    from algosdk import abi
+    
+    signer = AccountTransactionSigner(deployer_private_key)
+    atc = AtomicTransactionComposer()
+    
+    atc.add_method_call(
+        app_id=APP_ID,
+        method=abi.Method.from_signature("seed_treasury(pay)void"),
+        sender=deployer_address,
+        sp=sp,
+        signer=signer,
+        method_args=[TransactionWithSigner(fund_txn, signer)],
+    )
+    
+    result = atc.execute(algod_client, wait_rounds=4)
+    print(f"Funded contract with {fund_amount} microALGO via seed_treasury")
+    print(f"   Treasury txn: {result.tx_ids[0]}")
 else:
     print(
         f"Contract already funded: "

@@ -1,0 +1,6 @@
+[tool.pyrefly]
+# algopy (Algorand Python / Puya) is a compiler-target DSL.
+# It is not meant to be analysed by standard Python type-checkers.
+# All errors from "unknown name: arc4 / UInt64 / GlobalState / Txn / …"
+# are expected and should be suppressed.
+project_excludes = ["**"]

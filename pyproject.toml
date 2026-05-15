@@ -1,0 +1,18 @@
+[tool.pyrefly]
+# algopy (Algorand Python) is a compiler-target DSL, not standard Python.
+# Pyrefly cannot resolve its types, so exclude the contracts directory entirely.
+project_excludes = [
+    "contracts/**",
+    "bloopa_sdk/**",
+    "test_oracle.py",
+    "contract.py",
+]
+
+[tool.pyright]
+# Same exclusion for Pylance / Pyright
+exclude = [
+    "contracts",
+    "bloopa_sdk",
+    "test_oracle.py",
+    "contract.py",
+]

@@ -42,9 +42,14 @@ const ContractContext = createContext(null);
 const DEFAULT_POSITION = {
   stake: 0n,
   paymentCount: 0n,
-  creditLimit: 0n,
   outstanding: 0n,
   isDefaulted: false,
+  // V2 fields
+  tierMaxDraw: 0n,
+  dailyDrawn: 0n,
+  repayByRound: 0n,
+  tier: 0n,
+  aprBps: 0n,
 };
 
 /**
@@ -185,11 +190,16 @@ export function ContractProvider({ children }) {
 
       setIsOptedIn(true);
       setPosition({
-        stake: readLocalUint(kvs, "stake_amount"),
+        stake:        readLocalUint(kvs, "stake_amount"),
         paymentCount: readLocalUint(kvs, "payment_count"),
-        creditLimit: readLocalUint(kvs, "credit_limit"),
-        outstanding: readLocalUint(kvs, "outstanding"),
-        isDefaulted: readLocalUint(kvs, "is_defaulted") === 1n,
+        outstanding:  readLocalUint(kvs, "outstanding"),
+        isDefaulted:  readLocalUint(kvs, "is_defaulted") === 1n,
+        // V2 fields
+        tierMaxDraw:  readLocalUint(kvs, "tier_max_draw"),
+        dailyDrawn:   readLocalUint(kvs, "daily_drawn"),
+        repayByRound: readLocalUint(kvs, "repay_by_round"),
+        tier:         readLocalUint(kvs, "tier"),
+        aprBps:       readLocalUint(kvs, "apr_bps"),
       });
       setError(null);
     } catch (err) {
@@ -404,8 +414,10 @@ export function ContractProvider({ children }) {
 
   // ──────────────────────────────────────────
   // callDraw
-  // Contract: draw(amount: uint64) → void
-  // Uses inner txn to send ALGO to caller → fee must be 2000 (covers inner txn)
+  // Contract: draw(amount: uint64, attestation_hash: byte[32]) → void
+  // skip_attestation=1 on testnet so hash value doesn't matter;
+  // but the ABI argument must still be exactly 32 bytes.
+  // Uses inner txn to send ALGO to caller → fee must be 2000.
   // ──────────────────────────────────────────
   const callDraw = useCallback(
     async (amountAlgo) => {
@@ -416,11 +428,29 @@ export function ContractProvider({ children }) {
 
         const atc = new algosdk.AtomicTransactionComposer();
         const sp = await algodClient.getTransactionParams().do();
+        const amountMicro = toMicroAlgo(amountAlgo);
+
+        // Build attestation hash: sha256(sender_32 + amount_8 + round_8)
+        // On testnet skip_attestation=1 so the value is ignored, but must be 32 bytes.
+        const currentRound = BigInt(sp.firstValid);
+        const senderBytes = algosdk.decodeAddress(address).publicKey; // 32 bytes
+        const amountBytes = new Uint8Array(8);
+        const roundBytes  = new Uint8Array(8);
+        const amtView     = new DataView(amountBytes.buffer);
+        const rndView     = new DataView(roundBytes.buffer);
+        amtView.setBigUint64(0, amountMicro, false); // big-endian
+        rndView.setBigUint64(0, currentRound,  false);
+        const preimage = new Uint8Array(48);
+        preimage.set(senderBytes,  0);
+        preimage.set(amountBytes, 32);
+        preimage.set(roundBytes,  40);
+        const hashBuf  = await crypto.subtle.digest("SHA-256", preimage);
+        const hashArr  = new Uint8Array(hashBuf); // 32 bytes
 
         atc.addMethodCall({
           appID: APP_ID,
           method: new algosdk.ABIMethod(ABI_METHODS.draw),
-          methodArgs: [toMicroAlgo(amountAlgo)],
+          methodArgs: [amountMicro, hashArr],
           sender: address,
           suggestedParams: { ...sp, fee: 2000, flatFee: true },
           signer: makeSigner(),

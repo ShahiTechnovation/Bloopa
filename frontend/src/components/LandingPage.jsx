@@ -290,6 +290,46 @@ export default function LandingPage({ onLaunchApp }) {
         </div>
       </section>
 
+      {/* ── LIVE ON TESTNET ── */}
+      <section className="relative py-16 px-4 bg-white z-10 border-b-[3px] border-black">
+        <div className="max-w-[900px] mx-auto flex flex-col items-center text-center">
+
+          {/* Live badge */}
+          <div className="flex items-center gap-2 mb-10">
+            <span className="w-3 h-3 rounded-full bg-success border-2 border-black animate-pulse" />
+            <span className="font-pixel text-base font-bold text-black uppercase tracking-widest">
+              Live on Algorand Testnet
+            </span>
+          </div>
+
+          {/* Stat cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full mb-10">
+            <div className="brutalist-card p-5 bg-white flex flex-col items-center">
+              <span className="font-hand text-lg font-bold text-text-secondary mb-1">App ID</span>
+              <span className="font-pixel text-2xl font-bold text-black tracking-tight">762466410</span>
+            </div>
+            <div className="brutalist-card p-5 bg-accent flex flex-col items-center">
+              <span className="font-hand text-lg font-bold text-black mb-1">Network</span>
+              <span className="font-pixel text-xl font-bold text-black">Algorand Testnet</span>
+            </div>
+            <div className="brutalist-card p-5 bg-success flex flex-col items-center">
+              <span className="font-hand text-lg font-bold text-black mb-1">Contract</span>
+              <span className="font-pixel text-xl font-bold text-black">ARC-4 · Puya</span>
+            </div>
+          </div>
+
+          {/* Explorer link */}
+          <a
+            href="https://testnet.explorer.perawallet.app/application/762466410"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border-[3px] border-black px-6 py-2 font-display font-black text-base text-black shadow-brutalist-sm hover:bg-warning transition-all uppercase tracking-wider"
+          >
+            Verify on-chain →
+          </a>
+        </div>
+      </section>
+
       {/* ── CTA SECTION ── */}
       <section className="relative py-24 px-4 bg-surface z-10">
         <div className="max-w-[700px] mx-auto text-center flex flex-col items-center">
