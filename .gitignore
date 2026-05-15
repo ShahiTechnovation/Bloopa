@@ -21,6 +21,7 @@ dist/
 *.egg-info/
 .eggs/
 pip-wheel-metadata/
+dist_pypi/
 MANIFEST
 *.manifest
 *.spec
