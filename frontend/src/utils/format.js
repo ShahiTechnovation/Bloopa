@@ -64,19 +64,30 @@ export const fmtMicro = (micro) => {
 };
 
 /**
- * Calculate credit score from position data
- * score = min(100, paymentCount*10 + totalRepaid/stake*50)
- * Since we don't have totalRepaid, approximate from paymentCount & limit growth
+ * Calculate credit score from V2 position data.
+ *
+ * Score factors:
+ *   1. Payment history → 0-70 pts (10 pmts=Trusted, 50=Veteran, 100=Elite)
+ *   2. APR tier        → 0-30 pts (lower APR = higher tier = better score)
+ *
+ * @param {Object} position — from ContractContext
+ * @returns {number} score in [0, 100]
  */
 export const calcScore = (position) => {
   if (!position || position.stake === 0n) return 0;
+
   const payments = Number(position.paymentCount);
-  const stake = Number(position.stake) / 1e6;
-  const limit = Number(position.creditLimit) / 1e6;
-  const baseLimit = stake * 2;
-  const limitGrowth = Math.max(0, limit - baseLimit);
-  // Approximate: each payment adds 0.5 ALGO to limit
-  const repaidEstimate = limitGrowth * 2; // rough
-  const score = Math.min(100, (payments * 10) + (repaidEstimate / stake * 50));
-  return Math.max(0, score);
+  const aprBps   = Number(position.aprBps);
+
+  // Payment score: logarithmic ramp capped at 70
+  let paymentScore = 0;
+  if (payments >= 100)     paymentScore = 70;
+  else if (payments >= 50) paymentScore = 55 + (payments - 50) * (15 / 50);
+  else if (payments >= 10) paymentScore = 30 + (payments - 10) * (25 / 40);
+  else                     paymentScore = payments * 3;
+
+  // APR score: 30 pts at Elite (400 bps), 0 pts at Fresh (2400 bps)
+  const aprScore = Math.max(0, Math.round(((2400 - aprBps) / 2000) * 30));
+
+  return Math.min(100, Math.round(paymentScore + aprScore));
 };

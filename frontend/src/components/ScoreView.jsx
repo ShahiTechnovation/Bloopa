@@ -143,91 +143,77 @@ function StatsRow({ payments, totalRepaid, creditLimit }) {
   );
 }
 
-/* ── Credit Multiplier Ladder ── */
-function MultiplierLadder({ currentPayments, stake }) {
+/* ── Tier Ladder — V2 (Fresh / Trusted / Veteran / Elite) ── */
+function MultiplierLadder({ currentPayments }) {
+  // Must match criteria.py TIER_THRESHOLDS and TIER_MAX_DRAW exactly
   const tiers = [
-    { payments: 0,  mult: 2 },
-    { payments: 1,  mult: 2.5 },
-    { payments: 2,  mult: 3 },
-    { payments: 3,  mult: 3.5 },
-    { payments: 5,  mult: 4.5 },
-    { payments: 10, mult: 7 },
-    { payments: 16, mult: 10 },
+    { payments: 0,   name: "Fresh",   maxDraw: 0.1,  dailyCap: 0.5,  apr: 24, color: "var(--text-muted)" },
+    { payments: 10,  name: "Trusted", maxDraw: 0.5,  dailyCap: 2,    apr: 16, color: "var(--accent)" },
+    { payments: 50,  name: "Veteran", maxDraw: 2.0,  dailyCap: 10,   apr: 9,  color: "var(--warning)" },
+    { payments: 100, name: "Elite",   maxDraw: 5.0,  dailyCap: 25,   apr: 4,  color: "var(--success)" },
   ];
 
-  const stakeAlgo = Number(stake) / 1e6;
   const cp = Number(currentPayments);
 
-  // Find current tier index
+  // Current tier: highest threshold the agent has crossed
   let currentIdx = 0;
   for (let i = tiers.length - 1; i >= 0; i--) {
-    if (cp >= tiers[i].payments) {
-      currentIdx = i;
-      break;
-    }
+    if (cp >= tiers[i].payments) { currentIdx = i; break; }
   }
 
   return (
     <div className="card p-6">
-      <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-4" style={{ color: "var(--text-secondary)" }}>
-        Credit Multiplier Ladder
+      <p className="text-[11px] font-sans font-medium uppercase tracking-[0.1em] mb-5" style={{ color: "var(--text-secondary)" }}>
+        Tier Progression
       </p>
       <div className="space-y-0">
         {tiers.map((tier, i) => {
           const achieved = cp >= tier.payments;
           const isCurrent = i === currentIdx;
           return (
-            <div key={i} className="flex items-center gap-3 py-2 relative">
-              {/* Vertical line */}
+            <div key={i} className="flex items-start gap-3 py-2.5 relative">
+              {/* Vertical connector line */}
               {i < tiers.length - 1 && (
                 <div
-                  className="absolute left-[7px] top-[24px] w-px h-[calc(100%-8px)]"
-                  style={{
-                    background: achieved ? "var(--accent)" : "var(--bg-border)",
-                  }}
+                  className="absolute left-[7px] top-[26px] w-px h-[calc(100%-8px)]"
+                  style={{ background: achieved ? tier.color : "var(--bg-border)" }}
                 />
               )}
-              {/* Dot */}
+              {/* Status dot */}
               <div
-                className="w-[15px] h-[15px] rounded-full border-2 shrink-0 z-10 transition-all duration-300"
+                className="w-[15px] h-[15px] rounded-full border-2 shrink-0 z-10 mt-0.5 transition-all duration-300"
                 style={{
-                  borderColor: achieved ? "var(--accent)" : "var(--text-muted)",
-                  background: achieved ? "var(--accent)" : "transparent",
+                  borderColor: achieved ? tier.color : "var(--text-muted)",
+                  background: achieved ? tier.color : "transparent",
                 }}
               />
-              {/* Content */}
-              <div className="flex items-center justify-between flex-1 min-w-0">
-                <span className="text-xs font-sans" style={{ color: achieved ? "var(--text-primary)" : "var(--text-muted)" }}>
-                  {tier.payments === 0 ? "0 payments" : `${tier.payments} payment${tier.payments > 1 ? "s" : ""}`}
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="num text-xs font-semibold" style={{ color: achieved ? "var(--accent)" : "var(--text-muted)" }}>
-                    {tier.mult}× stake
+              {/* Tier info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-sans font-semibold" style={{ color: achieved ? tier.color : "var(--text-muted)" }}>
+                      {tier.name}
+                    </span>
+                    {isCurrent && (
+                      <span
+                        className="px-1.5 py-0.5 rounded-[4px] text-[9px] font-sans font-bold uppercase"
+                        style={{ background: `${tier.color}22`, color: tier.color, border: `1px solid ${tier.color}44` }}
+                      >
+                        CURRENT
+                      </span>
+                    )}
+                  </div>
+                  <span className="num text-[10px] font-mono" style={{ color: achieved ? "var(--text-secondary)" : "var(--text-muted)" }}>
+                    {tier.payments}+ payments
                   </span>
-                  {isCurrent && (
-                    <span
-                      className="px-1.5 py-0.5 rounded-[4px] text-[9px] font-sans font-semibold uppercase"
-                      style={{
-                        background: "var(--accent-dim)",
-                        color: "var(--accent)",
-                        border: "1px solid rgba(99,102,241,0.3)",
-                      }}
-                    >
-                      CURRENT
-                    </span>
-                  )}
-                  {i === tiers.length - 1 && (
-                    <span
-                      className="px-1.5 py-0.5 rounded-[4px] text-[9px] font-sans font-semibold uppercase"
-                      style={{
-                        background: "var(--success-dim)",
-                        color: "var(--success)",
-                        border: "1px solid rgba(34,197,94,0.3)",
-                      }}
-                    >
-                      MAX CAP
-                    </span>
-                  )}
+                </div>
+                <div className="flex gap-4 mt-1">
+                  <span className="num text-[11px]" style={{ color: achieved ? "var(--text-primary)" : "var(--text-muted)" }}>
+                    {tier.maxDraw} ALGO / draw
+                  </span>
+                  <span className="text-[11px] font-sans" style={{ color: achieved ? "var(--text-muted)" : "var(--bg-border)" }}>
+                    {tier.apr}% APR
+                  </span>
                 </div>
               </div>
             </div>
@@ -308,13 +294,15 @@ export default function ScoreView() {
 
   const score = useMemo(() => calcScore(position), [position]);
   const paymentsStr = position.paymentCount.toString();
-  const limitStr = fmtAlgo(position.creditLimit);
-  // Approximate total repaid from position data
-  const stakeAlgo = Number(position.stake) / 1e6;
-  const limitAlgo = Number(position.creditLimit) / 1e6;
-  const baseLimit = stakeAlgo * 2;
-  const repaidEstimate = Math.max(0, (limitAlgo - baseLimit) * 2);
-  const repaidStr = repaidEstimate.toFixed(6);
+
+  // V2: use tierMaxDraw as the credit limit shown in the score view
+  const limitStr = fmtAlgo(position.tierMaxDraw);
+
+  // Approximate total repaid: outstanding=0 & repayByRound=0 means no active loan
+  // We estimate from dailyDrawn as a proxy for activity
+  const dailyDrawnAlgo = Number(position.dailyDrawn) / 1e6;
+  const outstandingAlgo = Number(position.outstanding) / 1e6;
+  const repaidStr = Math.max(0, dailyDrawnAlgo - outstandingAlgo).toFixed(6);
 
   return (
     <div className="flex flex-col gap-6">
@@ -350,11 +338,8 @@ export default function ScoreView() {
         creditLimit={limitStr}
       />
 
-      {/* Multiplier ladder */}
-      <MultiplierLadder
-        currentPayments={position.paymentCount}
-        stake={position.stake}
-      />
+      {/* Tier ladder — V2 */}
+      <MultiplierLadder currentPayments={position.paymentCount} />
 
       {/* Activity log */}
       <ActivityLog activities={activityLog} />

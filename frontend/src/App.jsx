@@ -22,6 +22,9 @@ import LandingPage from "./components/LandingPage.jsx";
 import Register from "./components/Register.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import ScoreView from "./components/ScoreView.jsx";
+import DocsShell from "./components/Docs/DocsShell.jsx";
+
+
 
 function LoadingSpinner() {
   return (
@@ -63,7 +66,8 @@ export default function App() {
   const { address } = useWallet();
   const { position, loading } = useContract();
   const [activeTab, setActiveTab] = useState("position");
-  const [showApp, setShowApp] = useState(false);
+  const [view, setView] = useState("landing"); // 'landing', 'app', 'docs'
+
   // Track whether we've completed at least one position fetch for this address
   const [hasFetched, setHasFetched] = useState(false);
 
@@ -71,13 +75,13 @@ export default function App() {
 
   // Auto-switch to app when wallet connects
   useEffect(() => {
-    if (address) {
-      setShowApp(true);
+    if (address && view === "landing") {
+      setView("app");
       setHasFetched(false); // reset for new address
-    } else {
+    } else if (!address) {
       setHasFetched(false);
     }
-  }, [address]);
+  }, [address, view]);
 
   // Mark fetch complete once loading becomes false after connecting
   useEffect(() => {
@@ -86,22 +90,26 @@ export default function App() {
     }
   }, [address, loading]);
 
-  // Show landing page if not launched and not connected
-  const showLanding = !showApp && !address;
-
   // While wallet is connected but we haven't finished first fetch, show spinner
-  const showLoading = address && !hasFetched && loading;
+  const showLoading = view === "app" && address && !hasFetched && loading;
 
   return (
     <div className="min-h-screen flex flex-col font-body bg-transparent">
-      <Header onLogoClick={() => setShowApp(false)} />
+      <Header 
+        onLogoClick={() => setView("landing")} 
+        onAppClick={() => setView("app")}
+        onDocsClick={() => setView("docs")}
+        activeView={view}
+      />
 
       <main
         className="flex-1 w-full"
         style={{ paddingTop: "56px", paddingBottom: "32px" }}
       >
-        {showLanding ? (
-          <LandingPage onLaunchApp={() => setShowApp(true)} />
+        {view === "docs" ? (
+          <DocsShell />
+        ) : view === "landing" ? (
+          <LandingPage onLaunchApp={() => setView("app")} />
         ) : showLoading ? (
           <LoadingSpinner />
         ) : !address || !isRegistered ? (
@@ -121,6 +129,7 @@ export default function App() {
           </div>
         )}
       </main>
+
 
       <Footer />
     </div>

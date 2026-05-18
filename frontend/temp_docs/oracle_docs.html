@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloopa Docs - Credit Oracle</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&amp;family=JetBrains+Mono:wght@400..800&amp;family=DM+Sans:wght@400..700&amp;family=Caveat:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f9f9f9",
+                        "secondary-container": "#fcdf46",
+                        "error-container": "#ffdad6",
+                        "background": "#f9f9f9",
+                        "tertiary-container": "#ffe3e2",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#b4f0c9",
+                        "on-surface": "#1b1b1b",
+                        "on-secondary-fixed-variant": "#524600",
+                        "on-background": "#1b1b1b",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f9f9f9",
+                        "primary-fixed-dim": "#99d4ae",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#bbf7d0",
+                        "surface-container-low": "#f3f3f3",
+                        "tertiary-fixed-dim": "#ffb3b2",
+                        "surface-dim": "#dadada",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-container": "#726200",
+                        "tertiary": "#8f4a4b",
+                        "on-secondary-fixed": "#211b00",
+                        "on-primary-fixed-variant": "#175034",
+                        "on-primary-fixed": "#002111",
+                        "outline-variant": "#c0c9c0",
+                        "outline": "#707972",
+                        "on-tertiary-container": "#9b5455",
+                        "tertiary-fixed": "#ffdad9",
+                        "surface-tint": "#31694b",
+                        "secondary-fixed": "#ffe24c",
+                        "on-surface-variant": "#404942",
+                        "primary": "#31694b",
+                        "secondary-fixed-dim": "#e2c62d",
+                        "on-primary-container": "#3c7354",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#723335",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#99d4ae",
+                        "on-tertiary-fixed": "#3a090d",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary": "#6d5e00",
+                        "inverse-surface": "#303030",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-xl": "4rem",
+                        "stack-md": "1.5rem",
+                        "margin-page": "2rem",
+                        "container-max": "1280px",
+                        "stack-sm": "0.75rem",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Syne"],
+                        "headline-lg": ["Syne"],
+                        "headline-xl": ["Syne"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-lg": ["DM Sans"],
+                        "code-block": ["JetBrains Mono"],
+                        "body-md": ["DM Sans"],
+                        "headline-md": ["Syne"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "800" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "headline-xl": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-mono": ["12px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "code-block": ["14px", { "lineHeight": "1.7", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .neo-shadow {
+            box-shadow: 6px 6px 0px 0px #1b1b1b;
+        }
+        .neo-shadow-sm {
+            box-shadow: 4px 4px 0px 0px #1b1b1b;
+        }
+        .neo-shadow-lg {
+            box-shadow: 10px 10px 0px 0px #1b1b1b;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md flex min-h-screen selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- SideNavBar (Shared Component) -->
+<nav class="hidden md:flex flex-col p-stack-sm overflow-y-auto fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest dark:bg-surface-dim border-r-[3px] border-on-surface dark:border-outline shadow-[6px_0px_0px_0px_rgba(0,0,0,1)] z-50">
+<div class="mb-stack-md px-2 pt-4">
+<h1 class="font-headline-md text-headline-md font-black text-on-surface dark:text-on-surface-variant tracking-tighter">◈ BLOOPA</h1>
+<p class="font-label-mono text-label-mono text-on-surface-variant uppercase mt-1">V2.4.0-STABLE</p>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<!-- Documentation -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface dark:text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-primary-container dark:hover:bg-primary-fixed-variant hover:text-on-primary-container font-label-mono text-label-mono uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                Documentation
+            </a>
+<!-- Core Concepts (Active) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container border-[3px] border-on-surface -rotate-1 translate-x-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-primary-container dark:hover:bg-primary-fixed-variant hover:text-on-primary-container transition-all active:translate-y-1 active:shadow-none duration-100 font-label-mono text-label-mono uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="architecture">architecture</span>
+                Core Concepts
+            </a>
+<!-- Smart Contracts -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface dark:text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-primary-container dark:hover:bg-primary-fixed-variant hover:text-on-primary-container font-label-mono text-label-mono uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                Smart Contracts
+            </a>
+<!-- Security -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface dark:text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-primary-container dark:hover:bg-primary-fixed-variant hover:text-on-primary-container font-label-mono text-label-mono uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+                Security
+            </a>
+<!-- Governance -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface dark:text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-primary-container dark:hover:bg-primary-fixed-variant hover:text-on-primary-container font-label-mono text-label-mono uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+                Governance
+            </a>
+<!-- API Reference -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface dark:text-on-surface-variant hover:translate-x-1 transition-transform hover:bg-primary-container dark:hover:bg-primary-fixed-variant hover:text-on-primary-container font-label-mono text-label-mono uppercase" href="#">
+<span class="material-symbols-outlined" data-icon="api">api</span>
+                API Reference
+            </a>
+</div>
+<div class="mt-auto pt-stack-md flex flex-col gap-2 border-t-[3px] border-on-surface dark:border-outline pb-4">
+<button class="w-full py-3 bg-on-surface text-surface font-label-mono text-label-mono uppercase border-[3px] border-on-surface neo-shadow-sm hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1b1b1b] active:translate-y-1 active:shadow-none transition-all">Launch App</button>
+<div class="flex gap-2 mt-4">
+<a class="flex-1 flex justify-center items-center gap-2 p-2 border-[3px] border-on-surface text-on-surface hover:bg-primary-container neo-shadow-sm active:translate-y-1 active:shadow-none transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-mono text-label-mono">Discord</span>
+</a>
+<a class="flex-1 flex justify-center items-center gap-2 p-2 border-[3px] border-on-surface text-on-surface hover:bg-primary-container neo-shadow-sm active:translate-y-1 active:shadow-none transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+<span class="font-label-mono text-label-mono">GitHub</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col min-h-screen md:ml-[280px]">
+<!-- TopAppBar (Shared Component) -->
+<header class="flex justify-between items-center h-16 px-gutter sticky top-0 z-40 w-full bg-surface dark:bg-background border-b-[3px] border-on-surface dark:border-outline">
+<div class="flex items-center gap-6">
+<!-- Mobile Logo Fallback -->
+<div class="md:hidden font-headline-md text-headline-md font-black text-on-surface tracking-tighter">◈ BLOOPA</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex gap-6">
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant dark:text-surface-variant hover:bg-tertiary-container hover:text-on-tertiary-container active:scale-95 transition-transform px-2 py-1" href="#">Guides</a>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant dark:text-surface-variant hover:bg-tertiary-container hover:text-on-tertiary-container active:scale-95 transition-transform px-2 py-1" href="#">Examples</a>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant dark:text-surface-variant hover:bg-tertiary-container hover:text-on-tertiary-container active:scale-95 transition-transform px-2 py-1" href="#">Status</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search Bar Placeholder -->
+<div class="hidden sm:flex items-center border-[3px] border-on-surface bg-surface-container-lowest px-3 py-1 neo-shadow-sm focus-within:bg-primary-container focus-within:shadow-[2px_2px_0px_0px_#1b1b1b] transition-all">
+<span class="material-symbols-outlined text-on-surface mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 font-label-mono text-label-mono w-48 outline-none" placeholder="Search Docs..." type="text"/>
+</div>
+<!-- Trailing Actions -->
+<button class="p-2 border-[3px] border-on-surface bg-secondary-container hover:bg-primary-container neo-shadow-sm active:translate-y-1 active:shadow-none transition-all flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button class="p-2 border-[3px] border-on-surface bg-surface-container-lowest hover:bg-tertiary-container neo-shadow-sm active:translate-y-1 active:shadow-none transition-all flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 w-full max-w-container-max mx-auto p-margin-page overflow-x-hidden">
+<!-- Breadcrumb & Header Section -->
+<div class="mb-stack-xl relative">
+<div class="font-label-mono text-label-mono text-on-surface-variant mb-6 uppercase tracking-widest">
+                    Docs <span class="mx-2">→</span> Protocol <span class="mx-2">→</span> <span class="text-on-surface font-bold border-b-2 border-on-surface">Credit Oracle</span>
+</div>
+<div class="absolute right-0 top-0 hidden lg:flex gap-4 z-10">
+<div class="bg-error-container text-on-error-container border-[3px] border-on-surface px-4 py-2 font-label-mono text-label-mono uppercase rotate-3 neo-shadow-sm">
+                        [LLM-GATED]
+                    </div>
+<div class="bg-secondary-fixed text-on-secondary-fixed border-[3px] border-on-surface px-4 py-2 font-label-mono text-label-mono uppercase -rotate-2 neo-shadow-sm">
+                        [IMMUTABLE CRITERIA]
+                    </div>
+</div>
+<h1 class="font-headline-xl text-headline-xl md:text-[80px] text-on-surface uppercase mb-6 drop-shadow-[4px_4px_0_#1b1b1b]">Credit Oracle</h1>
+<p class="font-body-lg text-body-lg text-on-surface max-w-3xl border-l-[6px] border-on-surface pl-6 py-2 bg-surface-container-low">
+                    Before any draw reaches the blockchain, a Large Language Model evaluates four hardcoded criteria. The oracle is the ONLY gatekeeper. No human override. No whitelist. No exceptions.
+                </p>
+<div class="mt-8 inline-flex items-center gap-3 bg-surface-container-lowest border-[3px] border-on-surface px-4 py-2 neo-shadow">
+<span class="flex w-3 h-3 bg-[#22c55e] rounded-full animate-pulse border-2 border-on-surface"></span>
+<span class="font-label-mono text-label-mono uppercase">Running on Venice AI (llama-3.3-70b) or Anthropic (claude-haiku)</span>
+</div>
+</div>
+<!-- Marquee Warning -->
+<div class="w-full bg-on-surface text-surface py-3 border-[3px] border-on-surface neo-shadow-sm mb-stack-xl flex overflow-hidden whitespace-nowrap -rotate-1">
+<div class="font-label-mono text-label-mono uppercase flex gap-8 tracking-widest">
+<span>★ LLM RISK ORACLE ★ 4 IMMUTABLE CRITERIA ★ NO HUMAN OVERRIDE ★ DENIAL = NO TX ★</span>
+<span>★ LLM RISK ORACLE ★ 4 IMMUTABLE CRITERIA ★ NO HUMAN OVERRIDE ★ DENIAL = NO TX ★</span>
+</div>
+</div>
+<!-- Flow Diagram -->
+<section class="mb-stack-xl">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface uppercase mb-8">Pipeline Architecture</h2>
+<div class="flex flex-col lg:flex-row items-center justify-between gap-4 p-8 bg-surface-container border-[3px] border-on-surface neo-shadow-lg relative z-0">
+<div class="bg-surface-container-lowest border-[3px] border-on-surface p-6 neo-shadow text-center min-w-[200px] z-10">
+<span class="material-symbols-outlined text-4xl mb-2">terminal</span>
+<div class="font-label-mono text-label-mono uppercase">Agent Code</div>
+</div>
+<div class="hidden lg:block w-16 h-[3px] bg-on-surface relative">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 border-t-[3px] border-r-[3px] border-on-surface rotate-45"></div>
+</div>
+<span class="lg:hidden material-symbols-outlined rotate-90 my-2">arrow_forward</span>
+<div class="bg-secondary-container border-[3px] border-on-surface p-6 neo-shadow text-center min-w-[200px] z-10 -rotate-2">
+<span class="material-symbols-outlined text-4xl mb-2">psychology</span>
+<div class="font-label-mono text-label-mono uppercase">Oracle Eval</div>
+</div>
+<div class="hidden lg:block w-16 h-[3px] bg-on-surface relative">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 border-t-[3px] border-r-[3px] border-on-surface rotate-45"></div>
+</div>
+<span class="lg:hidden material-symbols-outlined rotate-90 my-2">arrow_forward</span>
+<div class="bg-primary-container border-[3px] border-on-surface p-6 neo-shadow text-center min-w-[200px] z-10 rotate-1">
+<span class="material-symbols-outlined text-4xl mb-2">rule</span>
+<div class="font-label-mono text-label-mono uppercase">Approved / Denied</div>
+</div>
+<div class="hidden lg:block w-16 h-[3px] bg-on-surface relative">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 border-t-[3px] border-r-[3px] border-on-surface rotate-45"></div>
+</div>
+<span class="lg:hidden material-symbols-outlined rotate-90 my-2">arrow_forward</span>
+<div class="bg-surface-container-lowest border-[3px] border-on-surface p-6 neo-shadow text-center min-w-[200px] z-10">
+<span class="material-symbols-outlined text-4xl mb-2">link</span>
+<div class="font-label-mono text-label-mono uppercase">On-chain TX</div>
+</div>
+</div>
+</section>
+<!-- 4 Criteria Section -->
+<section class="mb-stack-xl">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface uppercase mb-8">The 4 Criteria</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Crit 1 -->
+<div class="bg-primary-container border-[3px] border-on-surface p-6 neo-shadow flex flex-col gap-4 -rotate-1 hover:-translate-y-2 hover:rotate-0 transition-transform">
+<div class="inline-block self-start bg-secondary-fixed border-[2px] border-on-surface px-3 py-1 font-label-mono text-label-mono text-xs uppercase rounded-full">
+                            QUANTITATIVE
+                        </div>
+<h3 class="font-headline-md text-headline-md uppercase">Return &gt; Cost</h3>
+<div class="bg-on-surface text-surface p-3 border-[2px] border-on-surface font-code-block text-code-block mt-auto break-all">
+                            expected_return &gt; loan_amount + interest
+                        </div>
+</div>
+<!-- Crit 2 -->
+<div class="bg-secondary-fixed border-[3px] border-on-surface p-6 neo-shadow flex flex-col gap-4 rotate-1 hover:-translate-y-2 hover:rotate-0 transition-transform mt-4 lg:mt-0">
+<div class="inline-block self-start bg-tertiary-container border-[2px] border-on-surface px-3 py-1 font-label-mono text-label-mono text-xs uppercase rounded-full">
+                            TEMPORAL
+                        </div>
+<h3 class="font-headline-md text-headline-md uppercase">Task Fits Window</h3>
+<div class="bg-on-surface text-surface p-3 border-[2px] border-on-surface font-code-block text-code-block mt-auto break-all">
+                            estimated_rounds &lt; 86,400
+                        </div>
+</div>
+<!-- Crit 3 -->
+<div class="bg-surface-variant border-[3px] border-on-surface p-6 neo-shadow flex flex-col gap-4 -rotate-1 hover:-translate-y-2 hover:rotate-0 transition-transform mt-8 lg:mt-0">
+<div class="inline-block self-start bg-primary-container border-[2px] border-on-surface px-3 py-1 font-label-mono text-label-mono text-xs uppercase rounded-full">
+                            BALANCE CHECK
+                        </div>
+<h3 class="font-headline-md text-headline-md uppercase">Zero Outstanding Debt</h3>
+<div class="bg-on-surface text-surface p-3 border-[2px] border-on-surface font-code-block text-code-block mt-auto break-all">
+                            outstanding == 0
+                        </div>
+</div>
+<!-- Crit 4 -->
+<div class="bg-error-container border-[3px] border-on-surface p-6 neo-shadow flex flex-col gap-4 rotate-1 hover:-translate-y-2 hover:rotate-0 transition-transform mt-12 lg:mt-0">
+<div class="inline-block self-start bg-error-container border-[2px] border-on-surface px-3 py-1 font-label-mono text-label-mono text-xs uppercase rounded-full">
+                            LLM JUDGMENT
+                        </div>
+<h3 class="font-headline-md text-headline-md uppercase">Acceptable Risk</h3>
+<div class="bg-on-surface text-surface p-3 border-[2px] border-on-surface font-code-block text-code-block mt-auto break-all">
+                            risk_level in ["low", "medium"]
+                        </div>
+</div>
+</div>
+</section>
+<!-- Providers Section -->
+<section class="mb-stack-xl">
+<div class="w-full bg-secondary-fixed text-on-secondary-fixed py-3 border-[3px] border-on-surface neo-shadow-sm mb-8 flex overflow-hidden whitespace-nowrap rotate-1">
+<div class="font-label-mono text-label-mono uppercase flex gap-8 tracking-widest">
+<span>🤖 SUPPORTED PROVIDERS · VENICE AI · ANTHROPIC CLAUDE · BRING YOUR OWN · 🤖</span>
+<span>🤖 SUPPORTED PROVIDERS · VENICE AI · ANTHROPIC CLAUDE · BRING YOUR OWN · 🤖</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Venice AI -->
+<div class="bg-primary-container border-[3px] border-on-surface p-8 neo-shadow relative">
+<div class="absolute -top-4 -right-4 bg-secondary-fixed border-[3px] border-on-surface px-4 py-1 font-label-mono text-label-mono uppercase rotate-[15deg] neo-shadow-sm z-10">
+                            DEFAULT
+                        </div>
+<h3 class="font-headline-md text-headline-md uppercase mb-2">Venice AI</h3>
+<p class="font-label-mono text-label-mono mb-6 text-on-surface-variant">Model: llama-3.3-70b</p>
+<div class="bg-[#111111] border-[3px] border-on-surface p-4 relative group">
+<div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-surface text-on-surface px-2 py-1 border-[2px] border-on-surface font-label-mono text-xs uppercase hover:bg-secondary-fixed">Copy</button>
+</div>
+<pre class="font-code-block text-code-block text-surface-variant overflow-x-auto"><code>export VENICE_API_KEY="sk-..."
+bloopa oracle set-provider venice</code></pre>
+</div>
+</div>
+<!-- Anthropic -->
+<div class="bg-surface-variant border-[3px] border-on-surface p-8 neo-shadow translate-y-4">
+<h3 class="font-headline-md text-headline-md uppercase mb-2">Anthropic</h3>
+<p class="font-label-mono text-label-mono mb-6 text-on-surface-variant">Model: claude-haiku-4-5-20251001</p>
+<div class="bg-[#111111] border-[3px] border-on-surface p-4 relative group">
+<div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-surface text-on-surface px-2 py-1 border-[2px] border-on-surface font-label-mono text-xs uppercase hover:bg-secondary-fixed">Copy</button>
+</div>
+<pre class="font-code-block text-code-block text-surface-variant overflow-x-auto"><code>export ANTHROPIC_API_KEY="sk-ant-..."
+bloopa oracle set-provider anthropic</code></pre>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full mt-stack-xl flex flex-col md:flex-row justify-between items-center p-margin-page border-t-[3px] border-on-surface dark:border-outline bg-surface-container-highest dark:bg-inverse-surface">
+<div class="mb-4 md:mb-0">
+<span class="font-headline-md text-headline-md italic text-on-surface dark:text-inverse-on-surface">◈ BLOOPA</span>
+<p class="font-label-mono text-label-mono text-on-surface dark:text-inverse-on-surface mt-2 opacity-80">© 2024 BLOOPA PROTOCOL. CODE IS LAW.</p>
+</div>
+<nav class="flex flex-wrap gap-6">
+<a class="font-label-mono text-label-mono text-on-surface dark:text-inverse-on-surface opacity-80 hover:text-primary hover:opacity-100 transition-opacity duration-200 uppercase" href="#">Whitepaper</a>
+<a class="font-label-mono text-label-mono text-on-surface dark:text-inverse-on-surface opacity-80 hover:text-primary hover:opacity-100 transition-opacity duration-200 uppercase" href="#">Audit Reports</a>
+<a class="font-label-mono text-label-mono text-on-surface dark:text-inverse-on-surface opacity-80 hover:text-primary hover:opacity-100 transition-opacity duration-200 uppercase" href="#">Bug Bounty</a>
+<a class="font-label-mono text-label-mono text-on-surface dark:text-inverse-on-surface opacity-80 hover:text-primary hover:opacity-100 transition-opacity duration-200 uppercase" href="#">Terms</a>
+</nav>
+</footer>
+</div>
+</body></html>

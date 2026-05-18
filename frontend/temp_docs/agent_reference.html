@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bloopa SDK Reference</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,700&amp;family=JetBrains+Mono:wght@400;700;800&amp;family=Syne:wght@400;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-tint": "#31694b",
+                "secondary-fixed-dim": "#e2c62d",
+                "on-tertiary": "#ffffff",
+                "on-background": "#1b1b1b",
+                "tertiary-fixed-dim": "#ffb3b2",
+                "on-tertiary-fixed": "#3a090d",
+                "secondary-fixed": "#ffe24c",
+                "on-primary-container": "#3c7354",
+                "background": "#f9f9f9",
+                "primary-container": "#bbf7d0",
+                "primary-fixed-dim": "#99d4ae",
+                "on-secondary": "#ffffff",
+                "inverse-on-surface": "#f1f1f1",
+                "secondary-container": "#fcdf46",
+                "error": "#ba1a1a",
+                "tertiary": "#8f4a4b",
+                "on-tertiary-container": "#9b5455",
+                "error-container": "#ffdad6",
+                "primary": "#31694b",
+                "surface-container-high": "#e8e8e8",
+                "surface-container-lowest": "#ffffff",
+                "on-surface": "#1b1b1b",
+                "primary-fixed": "#b4f0c9",
+                "on-surface-variant": "#404942",
+                "on-secondary-fixed": "#211b00",
+                "on-primary-fixed-variant": "#175034",
+                "surface-container-low": "#f3f3f3",
+                "tertiary-fixed": "#ffdad9",
+                "surface-container": "#eeeeee",
+                "outline-variant": "#c0c9c0",
+                "on-secondary-fixed-variant": "#524600",
+                "on-error": "#ffffff",
+                "inverse-surface": "#303030",
+                "surface": "#f9f9f9",
+                "secondary": "#6d5e00",
+                "on-secondary-container": "#726200",
+                "outline": "#707972",
+                "on-primary": "#ffffff",
+                "on-primary-fixed": "#002111",
+                "on-error-container": "#93000a",
+                "tertiary-container": "#ffe3e2",
+                "surface-variant": "#e2e2e2",
+                "surface-dim": "#dadada",
+                "inverse-primary": "#99d4ae",
+                "surface-container-highest": "#e2e2e2",
+                "surface-bright": "#f9f9f9",
+                "on-tertiary-fixed-variant": "#723335"
+        },
+        "borderRadius": {
+                "DEFAULT": "0px",
+                "lg": "0px",
+                "xl": "0px",
+                "full": "0px"
+        },
+        "spacing": {
+                "stack-sm": "0.75rem",
+                "stack-md": "1.5rem",
+                "stack-xl": "4rem",
+                "gutter": "1.5rem",
+                "container-max": "1280px",
+                "margin-page": "2rem"
+        },
+        "fontFamily": {
+                "label-mono": [
+                        "JetBrains Mono"
+                ],
+                "headline-xl": [
+                        "Syne"
+                ],
+                "headline-lg-mobile": [
+                        "Syne"
+                ],
+                "code-block": [
+                        "JetBrains Mono"
+                ],
+                "body-md": [
+                        "DM Sans"
+                ],
+                "headline-md": [
+                        "Syne"
+                ],
+                "headline-lg": [
+                        "Syne"
+                ],
+                "body-lg": [
+                        "DM Sans"
+                ]
+        },
+        "fontSize": {
+                "label-mono": [
+                        "12px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-xl": [
+                        "64px",
+                        {
+                                "lineHeight": "1.1",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "32px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "800"
+                        }
+                ],
+                "code-block": [
+                        "14px",
+                        {
+                                "lineHeight": "1.7",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "1.5",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "32px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "1.1",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "1.6",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+  body { background-color: #FDFBF7; }
+  .brutal-border { border: 3px solid black; }
+  .brutal-shadow { box-shadow: 6px 6px 0px 0px rgba(0,0,0,1); }
+  .brutal-hover:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); }
+  .brutal-active:active { transform: translate(6px, 6px); box-shadow: 0px 0px 0px 0px rgba(0,0,0,1); }
+  
+  .bg-mint { background-color: #BBF7D0; }
+  .bg-yellow { background-color: #FDE047; }
+  .bg-coral { background-color: #FCA5A5; }
+  .bg-sky { background-color: #93C5FD; }
+  
+  .rotate-1 { transform: rotate(1deg); }
+  .rotate-n1 { transform: rotate(-1deg); }
+  .rotate-2 { transform: rotate(2deg); }
+  .rotate-n2 { transform: rotate(-2deg); }
+</style>
+</head>
+<body class="text-on-background font-body-md min-h-screen flex selection:bg-yellow selection:text-black">
+<!-- SIDEBAR -->
+<nav class="hidden md:flex flex-col w-[280px] bg-white brutal-border border-l-0 border-t-0 border-b-0 h-screen fixed left-0 top-0 z-50 p-6 overflow-y-auto">
+<div class="font-headline-lg text-headline-lg font-black uppercase tracking-tighter mb-8">
+    ◈ BLOOPA
+  </div>
+<div class="mb-8">
+<div class="relative brutal-shadow brutal-border bg-[#FDFBF7]">
+<span class="material-symbols-outlined absolute left-3 top-3 text-black">search</span>
+<input class="w-full bg-transparent border-none pl-10 pr-4 py-3 font-label-mono text-label-mono focus:ring-0 focus:outline-none placeholder-black" placeholder="Search Docs..." type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-6 font-label-mono text-label-mono">
+<div>
+<div class="text-gray-500 mb-2 font-bold tracking-widest">GETTING STARTED</div>
+<div class="flex flex-col gap-1">
+<a class="py-2 px-3 hover:bg-gray-100 flex items-center gap-2 transition-colors" href="#"><span class="material-symbols-outlined text-[16px]">bolt</span> Quickstart</a>
+<a class="py-2 px-3 hover:bg-gray-100 flex items-center gap-2 transition-colors" href="#"><span class="material-symbols-outlined text-[16px]">install_desktop</span> Installation</a>
+</div>
+</div>
+<div>
+<div class="text-gray-500 mb-2 font-bold tracking-widest">PROTOCOL</div>
+<div class="flex flex-col gap-1">
+<a class="py-2 px-3 hover:bg-gray-100 flex items-center gap-2 transition-colors" href="#"><span class="material-symbols-outlined text-[16px]">architecture</span> Architecture</a>
+<a class="py-2 px-3 hover:bg-gray-100 flex items-center gap-2 transition-colors" href="#"><span class="material-symbols-outlined text-[16px]">security</span> Security Model</a>
+</div>
+</div>
+<div>
+<div class="text-black mb-2 font-bold tracking-widest bg-yellow inline-block px-2 py-1 brutal-border transform rotate-1">SDK REFERENCE</div>
+<div class="flex flex-col gap-1 ml-2 border-l-2 border-black pl-2 mt-2">
+<a class="py-2 px-3 flex items-center gap-2 bg-mint brutal-border shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-x-1 -translate-y-1 font-bold" href="#">
+<span class="material-symbols-outlined text-[16px]">code_blocks</span> BloopaCreditAgent
+        </a>
+<div class="flex flex-col gap-1 ml-6 mt-1 text-[11px] text-gray-700">
+<a class="hover:text-black hover:underline py-1" href="#constructor">constructor</a>
+<a class="hover:text-black hover:underline py-1" href="#draw">draw()</a>
+<a class="hover:text-black hover:underline py-1" href="#repay">repay()</a>
+<a class="hover:text-black hover:underline py-1" href="#slash">slash()</a>
+<a class="hover:text-black hover:underline py-1" href="#get_position">get_position()</a>
+<a class="text-red-600 hover:underline py-1 font-bold" href="#exceptions">BloopaCreditDenied</a>
+</div>
+<a class="py-2 px-3 hover:bg-gray-100 flex items-center gap-2 transition-colors mt-2" href="#"><span class="material-symbols-outlined text-[16px]">account_balance_wallet</span> WalletManager</a>
+</div>
+</div>
+</div>
+</nav>
+<!-- MAIN CONTENT -->
+<main class="ml-0 md:ml-[280px] flex-1 flex">
+<!-- CENTER COLUMN -->
+<div class="flex-1 max-w-[800px] p-6 md:p-12 pb-32">
+<!-- HEADER -->
+<header class="mb-12">
+<div class="font-label-mono text-label-mono text-gray-500 mb-6 flex items-center gap-2">
+        SDK <span class="material-symbols-outlined text-[14px]">chevron_right</span> Python <span class="material-symbols-outlined text-[14px]">chevron_right</span> <span class="text-black bg-white border border-black px-1">Classes</span>
+</div>
+<div class="inline-block bg-yellow brutal-border px-3 py-1 font-label-mono text-label-mono font-bold rotate-1 mb-4 brutal-shadow shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+        [ CLASS ]
+      </div>
+<h1 class="font-headline-xl text-headline-xl text-black mb-6">BloopaCreditAgent</h1>
+<p class="font-body-lg text-body-lg mb-8 max-w-2xl bg-white p-4 brutal-border rotate-n1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        The core interface for interacting with the Bloopa decentralized credit protocol. Handles LLM-gated draw requests, position management, and slashing mechanics on the Algorand testnet.
+      </p>
+</header>
+<!-- MARQUEE -->
+<div class="w-full bg-yellow brutal-border overflow-hidden py-3 mb-16 rotate-1">
+<div class="whitespace-nowrap font-label-mono text-label-mono font-bold tracking-widest flex gap-8">
+<span>🐍 PYTHON SDK · ALGORAND TESTNET · LLM-GATED DRAWS · VERSION 2.0 🐍</span>
+<span>🐍 PYTHON SDK · ALGORAND TESTNET · LLM-GATED DRAWS · VERSION 2.0 🐍</span>
+</div>
+</div>
+<!-- CONSTRUCTOR -->
+<section class="mb-16" id="constructor">
+<div class="flex items-center gap-4 mb-6">
+<h2 class="font-headline-md text-headline-md">Constructor</h2>
+<span class="bg-mint brutal-border px-2 py-1 font-label-mono text-label-mono rotate-n2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">__init__</span>
+</div>
+<div class="bg-black text-[#4ADE80] font-code-block text-code-block p-6 brutal-border brutal-shadow mb-8 relative">
+<div class="absolute -top-3 -right-3 bg-white text-black brutal-border px-2 py-1 font-label-mono text-[10px] rotate-2">PYTHON</div>
+<pre><code>agent = BloopaCreditAgent(
+    api_key="blp_test_...",
+    network="algorand-testnet",
+    llm_provider="openai",
+    max_draw_limit=10000
+)</code></pre>
+</div>
+<div class="bg-white brutal-border brutal-shadow p-6 rotate-1">
+<h3 class="font-label-mono text-label-mono mb-4 border-b-2 border-black pb-2">PARAMETERS</h3>
+<ul class="space-y-4">
+<li class="flex flex-col md:flex-row gap-4 md:items-start border-b border-gray-200 pb-4">
+<div class="w-48"><span class="bg-gray-100 border-2 border-black px-2 py-1 font-code-block text-[12px] font-bold">api_key</span></div>
+<div class="flex-1"><span class="text-gray-500 font-label-mono text-[10px] bg-gray-200 px-1 mr-2">str</span> Your Bloopa developer API key. Required.</div>
+</li>
+<li class="flex flex-col md:flex-row gap-4 md:items-start border-b border-gray-200 pb-4">
+<div class="w-48"><span class="bg-gray-100 border-2 border-black px-2 py-1 font-code-block text-[12px] font-bold">network</span></div>
+<div class="flex-1"><span class="text-gray-500 font-label-mono text-[10px] bg-gray-200 px-1 mr-2">str</span> Target network. Default: <code>'algorand-testnet'</code>.</div>
+</li>
+<li class="flex flex-col md:flex-row gap-4 md:items-start border-b border-gray-200 pb-4">
+<div class="w-48"><span class="bg-gray-100 border-2 border-black px-2 py-1 font-code-block text-[12px] font-bold">llm_provider</span></div>
+<div class="flex-1"><span class="text-gray-500 font-label-mono text-[10px] bg-gray-200 px-1 mr-2">str</span> Oracle provider for credit scoring.</div>
+</li>
+</ul>
+</div>
+</section>
+<!-- METHODS -->
+<section class="mb-16" id="methods">
+<div class="bg-black text-white py-2 px-4 brutal-border inline-block mb-8 rotate-n1">
+<h2 class="font-label-mono text-label-mono tracking-widest text-yellow">★ METHODS ★</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<a class="block bg-mint p-6 brutal-border brutal-shadow brutal-hover transition-all rotate-1" href="#draw">
+<div class="font-code-block text-code-block font-bold mb-2 text-xl">draw()</div>
+<div class="font-body-md text-sm">Request a credit draw. Requires LLM oracle approval based on on-chain history.</div>
+</a>
+<a class="block bg-sky p-6 brutal-border brutal-shadow brutal-hover transition-all rotate-n1" href="#repay">
+<div class="font-code-block text-code-block font-bold mb-2 text-xl">repay()</div>
+<div class="font-body-md text-sm">Settle outstanding balances. Updates credit score via oracle feedback loop.</div>
+</a>
+<a class="block bg-coral p-6 brutal-border brutal-shadow brutal-hover transition-all rotate-2" href="#slash">
+<div class="font-code-block text-code-block font-bold mb-2 text-xl">slash()</div>
+<div class="font-body-md text-sm">Admin only. Liquidate position if collateral ratio falls below minimum threshold.</div>
+</a>
+<a class="block bg-yellow p-6 brutal-border brutal-shadow brutal-hover transition-all rotate-n2" href="#get_position">
+<div class="font-code-block text-code-block font-bold mb-2 text-xl">get_position()</div>
+<div class="font-body-md text-sm">Fetch current debt, collateral, and health factor for a given address.</div>
+</a>
+</div>
+</section>
+<!-- DRAW DEEP DIVE -->
+<section class="mb-16" id="draw">
+<div class="relative bg-white brutal-border brutal-shadow p-8 mt-12">
+<div class="absolute -top-5 left-8 bg-yellow brutal-border px-4 py-2 font-code-block text-code-block font-bold rotate-n2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          def draw(amount: float, asset: str) -&gt; dict
+        </div>
+<div class="mt-6 mb-8 border-l-4 border-mint pl-4 py-2 bg-gray-50">
+<p class="font-body-md text-body-md">
+            Initiates an LLM-gated credit draw. The oracle will analyze the wallet's Algorand transaction history in real-time to approve or deny the request.
+          </p>
+</div>
+<div class="flex flex-wrap gap-3 mb-8">
+<span class="bg-white brutal-border px-2 py-1 font-label-mono text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-1">ASYNC</span>
+<span class="bg-white brutal-border px-2 py-1 font-label-mono text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-n1">GAS INTENSIVE</span>
+<span class="bg-white brutal-border px-2 py-1 font-label-mono text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-2">ORACLE REQUIRED</span>
+<span class="bg-white brutal-border px-2 py-1 font-label-mono text-[11px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-n2">STATE MUTATING</span>
+</div>
+<div class="bg-black text-[#4ADE80] font-code-block text-code-block p-6 brutal-border shadow-[inset_4px_4px_0px_0px_rgba(255,255,255,0.2)] mb-8">
+<pre><code>try:
+    receipt = await agent.draw(
+        amount=500.00,
+        asset="USDC"
+    )
+    print(f"Draw successful: TxID {receipt['txid']}")
+except BloopaCreditDenied as e:
+    print(f"LLM Oracle Denied: {e.reason}")</code></pre>
+</div>
+<div class="bg-coral brutal-border p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-1 flex gap-4 items-start">
+<span class="material-symbols-outlined text-[32px] mt-1">warning</span>
+<div>
+<h4 class="font-label-mono font-bold mb-1">EXCEPTION: BloopaCreditDenied</h4>
+<p class="text-sm">Raised if the LLM oracle determines the wallet history is too risky or lacks sufficient collateral footprint. Contains a generated <code>reason</code> string from the LLM.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT TOC (Desktop Only) -->
+<aside class="hidden lg:block w-[220px] p-6 pt-12 sticky top-0 h-screen">
+<div class="font-label-mono text-label-mono font-bold mb-4 border-b-2 border-black pb-2">
+      ON THIS PAGE
+    </div>
+<ul class="font-body-md text-sm space-y-3">
+<li><a class="hover:text-mint hover:underline hover:bg-black px-1 transition-all" href="#constructor">Constructor</a></li>
+<li><a class="hover:text-mint hover:underline hover:bg-black px-1 transition-all" href="#methods">Methods Overview</a></li>
+<li class="pl-3 border-l-2 border-gray-300"><a class="hover:text-mint hover:underline hover:bg-black px-1 transition-all" href="#draw">draw()</a></li>
+<li class="pl-3 border-l-2 border-gray-300"><a class="hover:text-mint hover:underline hover:bg-black px-1 transition-all" href="#repay">repay()</a></li>
+<li class="pl-3 border-l-2 border-gray-300"><a class="hover:text-mint hover:underline hover:bg-black px-1 transition-all" href="#slash">slash()</a></li>
+<li class="pl-3 border-l-2 border-gray-300"><a class="hover:text-mint hover:underline hover:bg-black px-1 transition-all" href="#get_position">get_position()</a></li>
+</ul>
+<div class="mt-12 bg-white brutal-border p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-2">
+<div class="font-label-mono text-[10px] font-bold mb-2">NEED HELP?</div>
+<p class="text-xs mb-3">Join the builders in our Discord for SDK support.</p>
+<button class="w-full bg-black text-white font-label-mono py-2 text-xs brutal-hover brutal-border border-black">DISCORD -&gt;</button>
+</div>
+</aside>
+</main>
+</body></html>

@@ -93,17 +93,17 @@ function ScrapbookStep({ number, title, description, color }) {
 export default function LandingPage({ onLaunchApp }) {
   return (
     <div className="relative min-h-screen pb-20">
-      
+
       {/* ── HERO SECTION ── */}
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 pt-20 pb-10 overflow-hidden">
-        
+
         {/* Floating Doodles */}
         <DecorativeDoodle type="flower" className="absolute top-1/4 left-1/4 text-6xl opacity-80 animate-pulse" />
         <DecorativeDoodle type="star" className="absolute top-1/3 right-1/4 text-8xl text-success opacity-90" />
         <DecorativeDoodle type="heart" className="absolute bottom-1/4 left-1/3 text-4xl -rotate-12" />
 
         <div className="max-w-[960px] mx-auto text-center w-full relative z-10 flex flex-col items-center">
-          
+
           <div className="sticker bg-success-dim rotate-2 mb-8">
             <span className="font-pixel text-xl uppercase font-bold text-black flex items-center gap-2">
               <span className="w-3 h-3 bg-danger border-2 border-black rounded-full" /> For Autonomous Agents
@@ -125,8 +125,8 @@ export default function LandingPage({ onLaunchApp }) {
           </h1>
 
           <p className="font-body text-lg md:text-xl font-medium text-black max-w-xl mx-auto leading-relaxed bg-white border-[3px] border-black shadow-brutalist p-4 rotate-1 mb-10">
-            The first <span className="font-bold underline">on-chain</span> credit protocol for AI agents. Stake ALGO. Build reputation. Draw credit. 
-            <br/><span className="font-hand text-2xl text-accent-hover font-bold inline-block mt-2 -rotate-2">No human in the loop!</span>
+            The first <span className="font-bold underline">on-chain</span> credit protocol for AI agents. Stake ALGO. Build reputation. Draw credit.
+            <br /><span className="font-hand text-2xl text-accent-hover font-bold inline-block mt-2 -rotate-2">No human in the loop!</span>
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -153,14 +153,14 @@ export default function LandingPage({ onLaunchApp }) {
       {/* ── PROTOCOL STATS ── */}
       <section className="relative py-16 px-4 bg-accent-dim border-b-[3px] border-black z-10">
         <div className="max-w-[960px] mx-auto">
-           <h2 className="sticker font-hand text-3xl font-bold text-black mb-8 -rotate-2">
-             Numbers don't lie...
-           </h2>
+          <h2 className="sticker font-hand text-3xl font-bold text-black mb-8 -rotate-2">
+            Numbers don't lie...
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <ScrappedStat label="Multiplier" value="10×" />
+            <ScrappedStat label="LLM Gate" value="4" suffix="criteria" />
             <ScrappedStat label="Min Stake" value="1" suffix="ALGO" />
             <ScrappedStat label="On-Chain" value="100" suffix="%" />
-            <ScrappedStat label="Protection" value="30" suffix="rounds" />
+            <ScrappedStat label="Repay Window" value="24" suffix="hrs" />
           </div>
         </div>
       </section>
@@ -193,7 +193,7 @@ export default function LandingPage({ onLaunchApp }) {
             <StickerFeature
               icon="⟐"
               title="Draw Credit"
-              description="Borrow ALGO against your reputation. Leverage up to 10× your original stake."
+              description="Borrow ALGO after the LLM oracle approves your task. Caps rise from 0.1→5 ALGO as you level up."
               accentClass="bg-warning"
             />
             <StickerFeature
@@ -249,30 +249,30 @@ export default function LandingPage({ onLaunchApp }) {
             <ScrapbookStep
               number="04"
               title="Settle Up"
-              description="Pay back what you owe before the 30-round hard deadline or face slashing."
+              description="Repay before the 86,400-round (~24hr) deadline. Miss it and anyone can liquidate your stake."
               color="bg-danger"
             />
           </div>
 
           {/* Right: Formula */}
           <div>
-             <h2 className="sticker bg-danger font-display font-black text-3xl text-black mb-10 rotate-1">
+            <h2 className="sticker bg-danger font-display font-black text-3xl text-black mb-10 rotate-1">
               The Math
             </h2>
             <div className="brutalist-card p-6 md:p-8 bg-white border-[4px] border-black">
               <div className="font-hand text-xl font-bold text-black border-b-[3px] border-black pb-4 mb-6">
-                Credit Limit Formula (simplified)
+                Tier-Based Credit Caps (V2)
               </div>
               <div className="space-y-4">
                 {[
-                  { label: "Base Credit", formula: "stake × 2", bg: "bg-accent" },
-                  { label: "History Bonus", formula: "payments × 0.5A", bg: "bg-success" },
-                  { label: "Repaid Bonus", formula: "repaid ÷ 10", bg: "bg-warning" },
-                  { label: "Hard Cap", formula: "stake × 10", bg: "bg-danger" },
+                  { label: "Fresh (0 payments)", formula: "0.1 ALGO / draw", bg: "bg-white" },
+                  { label: "Trusted (10+ payments)", formula: "0.5 ALGO / draw", bg: "bg-accent" },
+                  { label: "Veteran (50+ payments)", formula: "2.0 ALGO / draw", bg: "bg-success" },
+                  { label: "Elite (100+ payments)", formula: "5.0 ALGO / draw", bg: "bg-warning" },
                 ].map((row) => (
                   <div key={row.label} className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b-2 border-dashed border-gray-400 gap-2">
-                    <span className="font-body font-bold text-lg text-black">{row.label}</span>
-                    <span className={`font-pixel text-xl font-bold border-2 border-black px-3 py-1 shadow-brutalist-sm ${row.bg}`}>
+                    <span className="font-body font-bold text-base text-black">{row.label}</span>
+                    <span className={`font-pixel text-lg font-bold border-2 border-black px-3 py-1 shadow-brutalist-sm ${row.bg}`}>
                       {row.formula}
                     </span>
                   </div>

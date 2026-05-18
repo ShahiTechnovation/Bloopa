@@ -97,6 +97,39 @@ body::before {
   box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 15s linear infinite;
+}
+
+.brutalist-border { border: 3px solid #000; }
+.brutalist-shadow { box-shadow: 6px 6px 0px 0px #000; }
+.brutalist-shadow-lg { box-shadow: 10px 10px 0px 0px #000; }
+.brutalist-interaction:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0px 0px #000; }
+.brutalist-interaction:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0px 0px #000; }
+
+/* Brutal styles from HTML mockup */
+.brutal-border { border: 3px solid black; }
+.brutal-shadow { box-shadow: 6px 6px 0px 0px rgba(0,0,0,1); }
+.brutal-hover { transition: transform 0.1s, box-shadow 0.1s; }
+.brutal-hover:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); }
+.brutal-active:active { transform: translate(6px, 6px); box-shadow: 0px 0px 0px 0px rgba(0,0,0,1); }
+
+.bg-mint { background-color: #BBF7D0; }
+.bg-yellow { background-color: #FDE047; }
+.bg-coral { background-color: #FCA5A5; }
+.bg-sky { background-color: #93C5FD; }
+
+.rotate-1 { transform: rotate(1deg); }
+.rotate-n1 { transform: rotate(-1deg); }
+.rotate-2 { transform: rotate(2deg); }
+.rotate-n2 { transform: rotate(-2deg); }
+
 .brutalist-btn {
   border: 3px solid black;
   box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
@@ -315,3 +348,22 @@ input:focus, button:focus-visible {
 .animate-fade-in {
   animation: fade-in 0.4s ease-out;
 }
+/* ── Marquee Animation ── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 15s linear infinite;
+}
+
+/* ── Documentation Typography Utilities ── */
+.font-headline-xl { font-family: var(--font-display); font-weight: 900; }
+.font-headline-lg { font-family: var(--font-display); font-weight: 800; }
+.font-headline-md { font-family: var(--font-display); font-weight: 700; }
+.font-label-mono { font-family: var(--mono); font-weight: 700; }
+.font-code-block { font-family: var(--mono); font-weight: 400; }
+.font-body-lg { font-family: var(--font-body); font-weight: 400; }
+.font-body-md { font-family: var(--font-body); font-weight: 400; }

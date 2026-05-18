@@ -27,10 +27,11 @@ function DisconnectIcon() {
   );
 }
 
-export default function Header({ onLogoClick }) {
+export default function Header({ onLogoClick, onAppClick, onDocsClick, activeView }) {
   const { address, connectPera, connectDefly, disconnect } = useWallet();
   const [showWalletMenu, setShowWalletMenu] = useState(false);
   const [balance, setBalance] = useState(null);
+
 
   // Fetch ALGO balance
   useEffect(() => {
@@ -58,24 +59,43 @@ export default function Header({ onLogoClick }) {
     <header className="fixed top-0 left-0 right-0 z-50 p-2 md:p-4 md:px-6 pointer-events-none">
       <div className="max-w-[1240px] mx-auto pointer-events-auto h-16 bg-white border-[3px] border-black shadow-brutalist flex items-center justify-between px-3 md:px-5">
         
-        {/* Left — Logo */}
-        <button
-          onClick={onLogoClick}
-          className="flex items-center gap-3 active:translate-y-[2px] transition-transform duration-75"
-        >
-          <LogoMark />
-          <span className="font-display font-black text-2xl tracking-tight text-black pt-1">
-            Bloopa
-          </span>
-        </button>
+        <div className="flex items-center gap-6 md:gap-10">
+          <button
+            onClick={onLogoClick}
+            className="flex items-center gap-3 active:translate-y-[2px] transition-transform duration-75"
+          >
+            <LogoMark />
+            <span className="font-display font-black text-2xl tracking-tight text-black pt-1">
+              Bloopa
+            </span>
+          </button>
+
+          {/* Docs nav link */}
+          <button
+            onClick={onDocsClick}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1 font-display font-black text-xs uppercase tracking-wider transition-all duration-75"
+            style={{
+              background: activeView === "docs" ? "#000" : "transparent",
+              color: activeView === "docs" ? "#fde047" : "#000",
+              border: "2.5px solid #000",
+              boxShadow: activeView === "docs" ? "3px 3px 0 #fde047" : "none",
+            }}
+          >
+            <span style={{ fontFamily: "var(--mono)", fontSize: 14 }}>📄</span>
+            Docs
+          </button>
+        </div>
+
+
 
         {/* Center — Network pill */}
-        <div className="hidden sm:flex items-center gap-2 px-4 py-1 bg-accent-dim border-[2px] border-black shadow-brutalist-sm rotate-[-1deg] font-pixel text-lg">
+        <div className="hidden lg:flex items-center gap-2 px-4 py-1 bg-accent-dim border-[2px] border-black shadow-brutalist-sm rotate-[-1deg] font-pixel text-lg">
           <span className="w-2.5 h-2.5 rounded-full bg-success border border-black animate-pulse" />
           <span className="uppercase text-black font-bold pt-1">
             Algorand Testnet
           </span>
         </div>
+
 
         {/* Right — Wallet */}
         <div className="flex items-center gap-2">
