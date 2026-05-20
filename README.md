@@ -11,7 +11,7 @@
 
 AI agents can execute code, call APIs, and transact on-chain autonomously — but they cannot borrow money. There is no credit bureau for software bots. Today, if an agent runs out of funds mid-task, it stops. It cannot take out a microloan, complete its work, and repay automatically.
 
-Bloopa is an on-chain credit bureau for autonomous AI agents on Algorand. Agents stake ALGO to register an identity, record their transaction history on-chain to build reputation, and draw undercollateralised credit lines — up to 10× their original stake — based on that history. The credit limit, tier, and interest rate are all computed deterministically by the smart contract with no off-chain intervention.
+Bloopa is an on-chain credit bureau for autonomous AI agents on Algorand. Agents stake ALGO to register an identity, record their transaction history on-chain to build reputation, and draw undercollateralised credit lines — up to 10× their original stake — based on that history. The credit limit, tier, and interest rate are all computed deterministically by the smart contract with no off-chain intervention. With x402 integration, Bloopa becomes the credit layer for the emerging agentic commerce stack — agents borrow to pay for APIs, repay after the task, and build reputation through real commerce history.
 
 What makes Bloopa different is the risk oracle. Before any draw reaches the chain, an LLM evaluates four hardcoded criteria against the agent's stated task. If the task is speculative, the agent already has outstanding debt, the expected return doesn't cover the loan cost, or the task won't finish before the repayment deadline — the draw is denied and no transaction is ever submitted. The LLM is the guardrail, not the human.
 
@@ -98,6 +98,55 @@ Wallet balance: unchanged.
 2. **Task fits repayment window**: `estimated_rounds < 86,400` (~24 hours)
 3. **No outstanding debt**: `outstanding == 0` (no loan stacking, ever)
 4. **Task risk is acceptable**: LLM assigns `low` or `medium` risk. `high` and `critical` are always denied.
+
+## x402 Integration
+
+Bloopa is the credit layer that finances x402 API payments for autonomous agents.
+
+x402 is an HTTP payment standard: a protected API returns HTTP 402 with payment requirements, the client pays on-chain, retries, and gets the resource. The problem is agents need capital to pay. That's exactly what Bloopa solves.
+
+**The flow:**
+1. Agent hits an x402-protected endpoint → gets HTTP 402 with amount + receiver
+2. Agent calls `BloopaCreditAgent.draw()` with the 402 amount as the draw amount and the resource URL as the task description
+3. Bloopa's LLM risk oracle evaluates the x402 resource (same 4 criteria — return must exceed cost + interest, task fits within 24h, no outstanding debt, low/medium risk endpoint)
+4. If approved: agent submits ALGO payment to the x402 receiver, retries with X-PAYMENT header, gets the data
+5. After task completes: agent repays Bloopa + calls `record_payment()` — the x402 call becomes on-chain reputation
+6. Repeat. 10 verified x402 payments = Tier 1. 100 = Tier 3 (Elite). The tier history is a provable log of real agentic commerce.
+
+**Python — one import away:**
+
+```python
+from bloopa_sdk.x402_client import BloopX402Client
+
+client = BloopX402Client(credit_agent=bloopa_agent)
+
+# hits x402-protected price feed, funds it via Bloopa credit automatically
+response = client.get(
+    "https://api.prices.io/eth-usd",
+    expected_return_microalgo=80_000,
+)
+print(response.json())  # {"price": 2814.22}
+# payment_count++ on-chain. one step closer to Tier 1.
+```
+
+**Tier caps map to x402 pricing tiers:**
+
+| Tier | payments | max draw | x402 use case |
+|------|----------|----------|---------------|
+| 0 — Fresh   | 0   | 0.10 ALGO | sub-cent API calls, price feeds |
+| 1 — Trusted | 10  | 0.50 ALGO | standard data APIs |
+| 2 — Veteran | 50  | 2.00 ALGO | premium compute endpoints |
+| 3 — Elite   | 100 | 5.00 ALGO | high-value inference, oracle calls |
+
+**Install the x402-avm Python package alongside the Bloopa SDK:**
+
+```bash
+pip install bloopa-sdk "x402-avm[avm,httpx]"
+```
+
+The `BloopX402Client` handles the 402 → draw → pay → retry → repay → record_payment loop automatically. The developer never touches algosdk directly.
+
+---
 
 ### Tier System
 
