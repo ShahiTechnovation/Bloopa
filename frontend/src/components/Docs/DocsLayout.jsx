@@ -41,6 +41,13 @@ const NAV_GROUPS = [
       { id: "abi", label: "TEAL / ABI Specs", icon: "article" },
       { id: "guides", label: "Guides & Safety", icon: "explore" }
     ]
+  },
+  {
+    title: "INTEGRATIONS",
+    isHighlighted: false,
+    items: [
+      { id: "x402", label: "x402 Integration", icon: "payments" }
+    ]
   }
 ];
 
@@ -97,6 +104,13 @@ const TOC_MAP = {
     { label: "Safety Guides", href: "#guides-top" },
     { label: "Avoiding Liquidation", href: "#avoiding-liquidation" },
     { label: "Changelog", href: "#changelog" }
+  ],
+  x402: [
+    { label: "x402 Integration", href: "#x402-top" },
+    { label: "The Flow", href: "#x402-flow" },
+    { label: "Python Client", href: "#x402-python" },
+    { label: "Tier Caps", href: "#x402-tiers" },
+    { label: "Installation", href: "#x402-install" }
   ]
 };
 

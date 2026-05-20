@@ -1115,6 +1115,188 @@ function GuidesView() {
 }
 
 
+// 9. x402 Integration
+function X402View() {
+  const flowSteps = [
+    { n: "01", text: "Agent hits an x402-protected endpoint → gets HTTP 402 with amount + receiver" },
+    { n: "02", text: "Agent calls BloopaCreditAgent.draw() with the 402 amount as the draw amount and the resource URL as the task description" },
+    { n: "03", text: "Bloopa's LLM risk oracle evaluates the x402 resource — same 4 criteria: return must exceed cost + interest, task fits within 24h, no outstanding debt, low/medium risk endpoint" },
+    { n: "04", text: "If approved: agent submits ALGO payment to the x402 receiver, retries with X-PAYMENT header, gets the data" },
+    { n: "05", text: "After task completes: agent repays Bloopa + calls record_payment() — the x402 call becomes on-chain reputation" },
+    { n: "06", text: "Repeat. 10 verified x402 payments = Tier 1. 100 = Tier 3 (Elite). The tier history is a provable log of real agentic commerce." },
+  ];
+
+  const tiers = [
+    { tier: "0 — Fresh",   payments: "0",   draw: "0.10 ALGO", useCase: "sub-cent API calls, price feeds" },
+    { tier: "1 — Trusted", payments: "10",  draw: "0.50 ALGO", useCase: "standard data APIs" },
+    { tier: "2 — Veteran", payments: "50",  draw: "2.00 ALGO", useCase: "premium compute endpoints" },
+    { tier: "3 — Elite",   payments: "100", draw: "5.00 ALGO", useCase: "high-value inference, oracle calls" },
+  ];
+
+  return (
+    <div className="animate-fade-in" style={{ width: "100%" }} id="x402-top">
+      <SectionLabel>Integrations</SectionLabel>
+
+      {/* Page label badge */}
+      <div
+        style={{
+          display: "inline-block",
+          background: "#a5f3fc",
+          color: "#000000",
+          border: "2px solid #000000",
+          padding: "4px 12px",
+          fontFamily: "var(--mono)",
+          fontSize: "11px",
+          fontWeight: "bold",
+          marginBottom: "16px",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        [ HTTP 402 PAYMENT STANDARD ]
+      </div>
+
+      <SkewedHeading bg="#000" fg="#fff" angle={-1}>
+        x402 Integration
+      </SkewedHeading>
+
+      <BodyText style={{ maxWidth: 720 }}>
+        Bloopa is the credit layer that finances x402 API payments for autonomous agents.
+      </BodyText>
+
+      <BodyText style={{ maxWidth: 720 }}>
+        x402 is an HTTP payment standard: a protected API returns HTTP 402 with payment requirements, the client pays on-chain, retries, and gets the resource. The problem is agents need capital to pay. That's exactly what Bloopa solves.
+      </BodyText>
+
+      {/* ── How The Flow Works ── */}
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="x402-flow">
+        The Flow
+      </h3>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 36 }}>
+        {flowSteps.map((step) => (
+          <div
+            key={step.n}
+            style={{
+              display: "flex",
+              gap: 16,
+              alignItems: "flex-start",
+              background: step.n === "03" ? "#fefce8" : "#ffffff",
+              border: "3px solid #000000",
+              boxShadow: "3px 3px 0 #000000",
+              padding: "16px 20px",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 900,
+                fontSize: 22,
+                color: step.n === "03" ? "#000000" : "#737373",
+                minWidth: 38,
+                lineHeight: 1,
+                paddingTop: 2,
+              }}
+            >
+              {step.n}
+            </div>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: 14, lineHeight: 1.6, color: "#1a1a1a" }}>
+              {step.text}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Python Code ── */}
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="x402-python">
+        Python — one import away
+      </h3>
+
+      <CodeBlock lang="python">
+{`from bloopa_sdk.x402_client import BloopX402Client
+
+client = BloopX402Client(credit_agent=bloopa_agent)
+
+# hits x402-protected price feed, funds it via Bloopa credit automatically
+response = client.get(
+    "https://api.prices.io/eth-usd",
+    expected_return_microalgo=80_000,
+)
+print(response.json())  # {"price": 2814.22}
+# payment_count++ on-chain. one step closer to Tier 1.`}
+      </CodeBlock>
+
+      <Callout type="info" title="Automatic Loop">
+        <code>BloopX402Client</code> handles the full <strong>402 → draw → pay → retry → repay → record_payment</strong> loop automatically. The developer never touches algosdk directly.
+      </Callout>
+
+      {/* ── Tier Table ── */}
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="x402-tiers">
+        Tier caps map to x402 pricing tiers
+      </h3>
+
+      <div style={{ border: "3px solid #000000", boxShadow: "4px 4px 0 #000000", overflow: "hidden", marginBottom: 32 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--font-body)", fontSize: 14 }}>
+          <thead>
+            <tr style={{ background: "#000000", color: "#a5f3fc", borderBottom: "3px solid #000" }}>
+              {["Tier", "Payments", "Max Draw", "x402 Use Case"].map((h) => (
+                <th
+                  key={h}
+                  style={{
+                    padding: "12px 16px",
+                    textAlign: "left",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 900,
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tiers.map((row, idx) => (
+              <tr
+                key={row.tier}
+                style={{
+                  background: idx % 2 === 0 ? "#fdfbf7" : "#ffffff",
+                  borderBottom: idx === tiers.length - 1 ? "none" : "2px solid #000000",
+                }}
+              >
+                <td style={{ padding: "12px 16px", fontFamily: "var(--mono)", fontWeight: 900, color: idx === 3 ? "#16a34a" : "#000" }}>{row.tier}</td>
+                <td style={{ padding: "12px 16px", fontFamily: "var(--mono)" }}>{row.payments}</td>
+                <td style={{ padding: "12px 16px", fontFamily: "var(--mono)", fontWeight: 500 }}>{row.draw}</td>
+                <td style={{ padding: "12px 16px", fontFamily: "var(--font-body)", fontSize: 13, color: "#404040" }}>{row.useCase}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── Install ── */}
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="x402-install">
+        Installation
+      </h3>
+
+      <BodyText>
+        Install the <code>x402-avm</code> Python package alongside the Bloopa SDK:
+      </BodyText>
+
+      <CodeBlock lang="bash">
+{`pip install bloopa-sdk "x402-avm[avm,httpx]"`}
+      </CodeBlock>
+
+      <Callout type="warning" title="Testnet Note">
+        x402 integration is fully functional on Algorand Testnet. App ID: <strong>762466410</strong>. Each successful x402 payment increments <code>payment_count</code> on-chain and counts toward tier progression.
+      </Callout>
+    </div>
+  );
+}
+
+
 /* ── Fallback Placeholder ── */
 function Placeholder({ section }) {
   return (
@@ -1138,6 +1320,7 @@ const PAGE_MAP = {
   "wallet-manager": () => <WalletManagerView />,
   abi: () => <AbiView />,
   guides: () => <GuidesView />,
+  x402: () => <X402View />,
 };
 
 export default function DocsPage({ activePage, onNavigate }) {
