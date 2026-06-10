@@ -31,6 +31,7 @@ from algopy import (
     Txn,
     UInt64,
     arc4,
+    gtxn,
     itxn,
     log,
     op,
@@ -38,9 +39,10 @@ from algopy import (
 )
 
 # ── Interest constants (must match criteria.py and contract.py exactly) ────────
-TIER_0_APR_BPS   = UInt64(2400)
-DAY_IN_ROUNDS    = UInt64(86_400)
-ROUNDS_PER_YEAR  = UInt64(31_536_000)
+# Use plain int literals for module-level constants (puyapy 5.x doesn't support UInt64 at module scope)
+_TIER_0_APR_BPS   = 2400
+_DAY_IN_ROUNDS    = 86_400
+_ROUNDS_PER_YEAR  = 31_536_000
 
 
 # ── Intent struct ──────────────────────────────────────────────────────────────
@@ -118,7 +120,6 @@ class BloopIntentRouter(ARC4Contract):
     @arc4.abimethod
     def lock_intent(
         self,
-        pay: arc4.PaymentTransaction,
         task_hash: arc4.StaticArray[arc4.Byte, typing.Literal[32]],
         expiry_rounds_from_now: arc4.UInt64,
         api_cost_estimate: arc4.UInt64,
@@ -127,11 +128,14 @@ class BloopIntentRouter(ARC4Contract):
         """
         Lock ALGO and create a private swap intent.
 
-        user1 sends a payment to the Router and specifies which solver can fulfill.
-        Only the named solver_address can call borrow_to_execute().
+        user1 sends a payment to the Router (as the previous gtxn) and specifies
+        which solver can fulfill. Only the named solver_address can call
+        borrow_to_execute().
+
+        The payment transaction must be the immediately preceding transaction
+        in the group (gtxn[-1] / gtxn[Txn.group_index - 1]).
 
         Args:
-            pay:                   Payment to Router address (locked escrow)
             task_hash:             sha256(task params) — 32 bytes
             expiry_rounds_from_now: Rounds until intent expires (10–86400)
             api_cost_estimate:     Amount solver will borrow from Bloopa
@@ -142,9 +146,13 @@ class BloopIntentRouter(ARC4Contract):
 
         Emits log: b"LogIntentLocked:" + intent_id (8 bytes) + ":" + payment (8 bytes)
         """
-        assert pay.receiver == Global.current_application_address, "pay_to_router"
-        assert pay.amount > api_cost_estimate.native, "payment_must_exceed_api_cost"
-        assert pay.amount <= UInt64(10_000_000), "payment_too_large_max_10_algo"
+        # The payment must be the previous transaction in the group
+        pay_txn = gtxn.PaymentTransaction(Txn.group_index - UInt64(1))
+        payment_amount = pay_txn.amount
+
+        assert pay_txn.receiver == Global.current_application_address, "pay_to_router"
+        assert payment_amount > api_cost_estimate.native, "payment_must_exceed_api_cost"
+        assert payment_amount <= UInt64(10_000_000), "payment_too_large_max_10_algo"
         assert expiry_rounds_from_now.native > UInt64(10), "expiry_too_soon"
         assert expiry_rounds_from_now.native <= UInt64(86_400), "expiry_too_far"
         assert self.is_live.value == UInt64(1), "router_paused"
@@ -161,13 +169,13 @@ class BloopIntentRouter(ARC4Contract):
 
         intent = Intent(
             locker=arc4.Address(Txn.sender),
-            payment_amount=arc4.UInt64(pay.amount),
-            api_cost=api_cost_estimate,
+            payment_amount=arc4.UInt64(payment_amount),
+            api_cost=arc4.UInt64(api_cost_estimate.native),
             expiry_round=arc4.UInt64(expiry),
             task_hash=task_hash.copy(),
             solver_address=solver_address.copy(),
             assigned_agent=zero_address,
-            result_hash=zero_bytes32,
+            result_hash=zero_bytes32.copy(),
             state=arc4.UInt64(0),
         )
 
@@ -179,7 +187,7 @@ class BloopIntentRouter(ARC4Contract):
             b"LogIntentLocked:"
             + op.itob(intent_id)
             + b":"
-            + op.itob(pay.amount)
+            + op.itob(payment_amount)
         )
 
         return arc4.UInt64(intent_id)
@@ -224,9 +232,9 @@ class BloopIntentRouter(ARC4Contract):
         # Update intent: assigned_agent = solver, state = 1 (assigned)
         updated = Intent(
             locker=intent.locker.copy(),
-            payment_amount=intent.payment_amount.copy(),
-            api_cost=intent.api_cost.copy(),
-            expiry_round=intent.expiry_round.copy(),
+            payment_amount=arc4.UInt64(intent.payment_amount.native),
+            api_cost=arc4.UInt64(intent.api_cost.native),
+            expiry_round=arc4.UInt64(intent.expiry_round.native),
             task_hash=intent.task_hash.copy(),
             solver_address=intent.solver_address.copy(),
             assigned_agent=arc4.Address(Txn.sender),
@@ -299,7 +307,7 @@ class BloopIntentRouter(ARC4Contract):
         assert profit > UInt64(0), "insufficient_profit_after_repayment"
 
         # Get Bloopa contract address (escrow that receives repayment)
-        bloopa_addr_exists, bloopa_addr = op.AppParam.address(self.bloopa_app_id.value)
+        bloopa_addr, bloopa_addr_exists = op.AppParamsGet.app_address(self.bloopa_app_id.value)
         assert bloopa_addr_exists, "bloopa_app_not_found"
 
         # [0] Repay Bloopa: send repayment from Router escrow to Bloopa app address
@@ -335,9 +343,9 @@ class BloopIntentRouter(ARC4Contract):
         # Update intent state
         settled = Intent(
             locker=intent.locker.copy(),
-            payment_amount=intent.payment_amount.copy(),
-            api_cost=intent.api_cost.copy(),
-            expiry_round=intent.expiry_round.copy(),
+            payment_amount=arc4.UInt64(intent.payment_amount.native),
+            api_cost=arc4.UInt64(intent.api_cost.native),
+            expiry_round=arc4.UInt64(intent.expiry_round.native),
             task_hash=intent.task_hash.copy(),
             solver_address=intent.solver_address.copy(),
             assigned_agent=intent.assigned_agent.copy(),
@@ -403,9 +411,9 @@ class BloopIntentRouter(ARC4Contract):
         # Update state to expired
         expired = Intent(
             locker=intent.locker.copy(),
-            payment_amount=intent.payment_amount.copy(),
-            api_cost=intent.api_cost.copy(),
-            expiry_round=intent.expiry_round.copy(),
+            payment_amount=arc4.UInt64(intent.payment_amount.native),
+            api_cost=arc4.UInt64(intent.api_cost.native),
+            expiry_round=arc4.UInt64(intent.expiry_round.native),
             task_hash=intent.task_hash.copy(),
             solver_address=intent.solver_address.copy(),
             assigned_agent=intent.assigned_agent.copy(),

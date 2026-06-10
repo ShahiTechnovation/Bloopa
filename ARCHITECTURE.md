@@ -144,6 +144,7 @@ Bloopa/
 │   └── SKILL.md                 # Claude Skill definition (8 sections)
 │
 ├── tests/                       # Unit and integration tests
+│   ├── test_criteria.py         # Pure unit tests for criteria module
 │   ├── test_sdk.py              # SDK integration tests
 │   ├── test_oracle.py           # Oracle unit tests (Venice AI / Anthropic)
 │   └── test_x402_client.py      # x402 client unit tests (24 tests)

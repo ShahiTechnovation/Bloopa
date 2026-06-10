@@ -24,6 +24,39 @@ Payment flow (hidden from caller):
     7. GoPlausible facilitator: POST /verify → POST /settle → Algorand txn confirmed
     8. Server returns 200 OK
     9. agent.record_payment() → on-chain reputation update
+
+Wire format (GoPlausible x402 v1):
+
+    402 Response body (real GoPlausible format):
+    {
+      "x402Version": 1,
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",
+          "maxAmountRequired": "1000",
+          "asset": "10458941",
+          "payTo": "<merchant_address>",
+          "extra": {
+            "feePayer": "<facilitator_address>",
+            "name": "USDC",
+            "decimals": 6
+          }
+        }
+      ],
+      "error": "X402 Payment Required"
+    }
+
+    X-PAYMENT header value (base64-encoded JSON):
+    {
+      "x402Version": 1,
+      "scheme": "exact",
+      "network": "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",
+      "payload": {
+        "paymentGroup": ["<base64-signed-axfer>", "<base64-unsigned-feepayer-pay>"],
+        "paymentIndex": 0
+      }
+    }
 """
 
 from __future__ import annotations
@@ -42,6 +75,7 @@ from algosdk.v2client import algod as algod_module
 from .agent import BloopaCreditAgent
 from .exceptions import (
     BloopaCreditDenied,
+    BloopaCreditError,
     BloopX402PaymentError,
     BloopX402SetupError,
     BloopX402SpendLimitExceeded,
@@ -393,6 +427,12 @@ class BloopX402Client:
         print(f"Status: {resp.status_code}")
         print(f"Data:   {resp.text}")
 
+    Wire format:
+        GoPlausible returns 402 with an ``accepts`` array. BloopX402Client
+        automatically finds the ``exact`` + Algorand scheme entry, parses
+        ``maxAmountRequired``, ``payTo``, and ``extra.feePayer``, then builds
+        the X-PAYMENT header with the correct ``network`` field.
+
     Raises:
         BloopX402SetupError:         If auto opt-in or auto-swap fails.
         BloopX402SpendLimitExceeded: If 402 amount > max_spend_per_call.
@@ -435,6 +475,7 @@ class BloopX402Client:
             network:
                 CAIP-2 network identifier. Default: Algorand Testnet.
                 Use ``BloopX402Client.TESTNET_NETWORK`` or a custom value.
+                Must match the ``network`` field in the 402 response.
 
             usdc_asa_id:
                 Algorand Standard Asset ID for USDC. Default: 10458941 (testnet).
@@ -487,10 +528,6 @@ class BloopX402Client:
             pre_sign_callback=None,  # set during request handling
         )
 
-        # State shared across the payment cycle of a single request
-        self._pending_payment_amount_micro_usdc: int = 0
-        self._pending_payment_url: str = ""
-
         # Auto opt-in on construction
         if auto_opt_in:
             self._ensure_usdc_opted_in()
@@ -512,15 +549,15 @@ class BloopX402Client:
             BloopX402PaymentError:       Facilitator or network failure.
             BloopaCreditDenied:          Bloopa risk oracle denial.
         """
-        return self._run(self.aget(url, **kwargs))
+        return _run_sync(self.aget(url, **kwargs))
 
     def post(self, url: str, **kwargs: Any) -> httpx.Response:
         """Send POST request, auto-paying any 402 with Bloopa credit."""
-        return self._run(self.arequest("POST", url, **kwargs))
+        return _run_sync(self.arequest("POST", url, **kwargs))
 
     def request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         """Send an arbitrary HTTP request, auto-paying any 402."""
-        return self._run(self.arequest(method, url, **kwargs))
+        return _run_sync(self.arequest(method, url, **kwargs))
 
     # ── Async public interface ─────────────────────────────────────────────────
 
@@ -549,16 +586,18 @@ class BloopX402Client:
 
             # ── Parse 402 requirements ──────────────────────────────────────
             try:
-                payment_requirements = response.json()
+                raw_body = response.json()
             except Exception:
                 raise BloopX402PaymentError(
                     "402 response body is not valid JSON — cannot parse paymentRequirements"
                 )
 
-            self._pending_payment_url = url
+            # Normalize to flat internal format (handles both real GoPlausible
+            # "accepts" array format AND simple flat test-server format)
+            payment_requirements = self._parse_payment_requirements(raw_body)
 
             # ── Spend guard ─────────────────────────────────────────────────
-            amount_micro_usdc = int(payment_requirements.get("amount", 0))
+            amount_micro_usdc = payment_requirements["amount"]
             if amount_micro_usdc > self.max_spend_per_call:
                 raise BloopX402SpendLimitExceeded(amount_micro_usdc, self.max_spend_per_call)
 
@@ -572,7 +611,6 @@ class BloopX402Client:
             self._do_credit_draw(micro_algo_equiv, task_desc)
 
             # ── Build X-PAYMENT header ──────────────────────────────────────
-            self._pending_payment_amount_micro_usdc = amount_micro_usdc
             x_payment = await self._build_x_payment_header(
                 payment_requirements=payment_requirements,
                 http_client=http,
@@ -602,6 +640,89 @@ class BloopX402Client:
             raise BloopX402PaymentError(
                 f"Server returned {retry_response.status_code} after payment: {reason}"
             )
+
+    # ── Payment requirements parser ─────────────────────────────────────────────
+
+    def _parse_payment_requirements(self, body: dict) -> dict:
+        """
+        Normalize x402 402 response body to an internal flat dict.
+
+        Handles both:
+        - Real GoPlausible format: body["accepts"][0] with maxAmountRequired
+        - Flat test-server format: body["amount"] (legacy / simplified)
+
+        Returns:
+            {
+              "scheme":   str,
+              "amount":   int,    # microUSDC
+              "asset":    int,    # ASA ID
+              "payTo":    str,    # merchant Algorand address
+              "network":  str,    # CAIP-2 network identifier
+              "extra":    dict,   # feePayer, name, decimals, etc.
+            }
+
+        Raises:
+            BloopX402PaymentError: If no matching scheme/network is found.
+        """
+        if "accepts" in body and isinstance(body["accepts"], list):
+            # Real GoPlausible x402 format
+            for req in body["accepts"]:
+                req_network = req.get("network", "")
+                req_scheme = req.get("scheme", "")
+                # Match on scheme=exact and network contains our chain identifier
+                if req_scheme == "exact" and (
+                    req_network == self.network
+                    or self.network in req_network
+                    or req_network in self.network
+                ):
+                    try:
+                        amount = int(req.get("maxAmountRequired", "0"))
+                    except (ValueError, TypeError):
+                        amount = 0
+
+                    try:
+                        asset = int(req.get("asset", self.usdc_asa_id))
+                    except (ValueError, TypeError):
+                        asset = self.usdc_asa_id
+
+                    return {
+                        "scheme": "exact",
+                        "amount": amount,
+                        "asset": asset,
+                        "payTo": req.get("payTo", ""),
+                        "network": req_network,
+                        "extra": req.get("extra", {}),
+                    }
+
+            # No matching scheme found
+            available = [
+                f"{r.get('scheme','?')}/{r.get('network','?')}"
+                for r in body["accepts"]
+            ]
+            raise BloopX402PaymentError(
+                f"No matching 'exact' Algorand scheme in 402 accepts. "
+                f"Available: {available}. Expected network: {self.network}"
+            )
+
+        # Fallback: flat format (test servers, simple implementations)
+        try:
+            amount = int(body.get("amount", body.get("maxAmountRequired", "0")))
+        except (ValueError, TypeError):
+            amount = 0
+
+        try:
+            asset = int(body.get("asset", self.usdc_asa_id))
+        except (ValueError, TypeError):
+            asset = self.usdc_asa_id
+
+        return {
+            "scheme": body.get("scheme", "exact"),
+            "amount": amount,
+            "asset": asset,
+            "payTo": body.get("payTo", ""),
+            "network": body.get("network", self.network),
+            "extra": body.get("extra", {}),
+        }
 
     # ── USDC management ────────────────────────────────────────────────────────
 
@@ -749,6 +870,11 @@ class BloopX402Client:
         line is used for accounting, while the actual USDC transfer comes from
         the wallet's USDC balance (funded via auto-swap if needed).
 
+        Security: Only ``BloopaCreditDenied`` causes the payment to abort.
+        All other exceptions (network errors, etc.) are logged and the USDC
+        payment continues — this is intentional for availability, but the
+        failure IS logged at WARNING level so operators see it.
+
         Args:
             micro_algo:       microALGO equivalent of the USDC payment.
             task_description: Human-readable description for the risk oracle.
@@ -774,11 +900,20 @@ class BloopX402Client:
             self.agent.repay(result["total_repayable"])
 
         except BloopaCreditDenied:
-            raise  # let caller handle
-        except Exception as exc:
-            # Non-fatal: log and continue (USDC payment still happens)
+            raise  # always propagate — credit denial must block payment
+
+        except BloopaCreditError as exc:
+            # Known SDK error (chain failure, etc.) — log clearly, continue payment
             logger.warning(
-                "Bloopa draw failed (continuing with payment anyway): %s", exc
+                "Bloopa draw failed with BloopaCreditError (USDC payment continues): "
+                "%s: %s", type(exc).__name__, exc,
+            )
+
+        except Exception as exc:
+            # Unknown error (network timeout, etc.) — log clearly, continue payment
+            logger.warning(
+                "Bloopa draw raised unexpected %s (USDC payment continues): %s",
+                type(exc).__name__, exc,
             )
 
     def _do_record_payment(self, micro_usdc: int) -> None:
@@ -820,6 +955,7 @@ class BloopX402Client:
           base64(JSON({
               "x402Version": 1,
               "scheme": "exact",
+              "network": "<CAIP-2 network>",
               "payload": {
                   "paymentGroup": [base64(msgpack(Txn0)), base64(msgpack(Txn1))],
                   "paymentIndex": 0
@@ -830,7 +966,7 @@ class BloopX402Client:
         Otherwise falls back to manual construction.
 
         Args:
-            payment_requirements: Parsed dict from the 402 response body.
+            payment_requirements: Parsed flat dict (from _parse_payment_requirements).
             http_client:          Active httpx client for facilitator calls.
 
         Returns:
@@ -891,16 +1027,26 @@ class BloopX402Client:
         Used when x402-avm is not installed. Builds the minimal Algorand
         exact scheme payment group manually using raw algosdk.
 
-        This supports the GoPlausible testnet facilitator's expected format.
+        This supports the GoPlausible testnet facilitator's expected format:
+          base64(JSON({
+            "x402Version": 1,
+            "scheme": "exact",
+            "network": "<CAIP-2 network>",   ← REQUIRED by GoPlausible
+            "payload": {
+              "paymentGroup": [...],
+              "paymentIndex": 0
+            }
+          }))
         """
         sp = self.agent.algod_client.suggested_params()
         sp.fee = 0
         sp.flat_fee = True
 
-        amount = int(payment_requirements.get("amount", 0))
-        pay_to = payment_requirements.get("payTo", "")
-        asset_id = int(payment_requirements.get("asset", self.usdc_asa_id))
+        amount = payment_requirements["amount"]
+        pay_to = payment_requirements["payTo"]
+        asset_id = payment_requirements["asset"]
         fee_payer = payment_requirements.get("extra", {}).get("feePayer", "")
+        network = payment_requirements.get("network", self.network)
 
         # Txn[0]: axfer USDC to merchant
         axfer_txn = transaction.AssetTransferTxn(
@@ -953,6 +1099,7 @@ class BloopX402Client:
         payload = {
             "x402Version": 1,
             "scheme": "exact",
+            "network": network,          # REQUIRED: CAIP-2 network identifier
             "payload": {
                 "paymentGroup": group_b64,
                 "paymentIndex": 0,
@@ -1065,23 +1212,6 @@ class BloopX402Client:
         except Exception:
             return 0
 
-    @staticmethod
-    def _run(coro) -> Any:
-        """Run an async coroutine synchronously."""
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # Inside an existing event loop (e.g. Jupyter, FastAPI)
-                # Create a new thread with its own loop
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                    future = pool.submit(asyncio.run, coro)
-                    return future.result()
-            else:
-                return loop.run_until_complete(coro)
-        except RuntimeError:
-            return asyncio.run(coro)
-
     def __repr__(self) -> str:
         return (
             f"BloopX402Client("
@@ -1089,3 +1219,28 @@ class BloopX402Client:
             f"max_spend={self.max_spend_per_call}μUSDC, "
             f"facilitator={self.facilitator_url})"
         )
+
+
+# ── Async event-loop helper ───────────────────────────────────────────────────
+
+
+def _run_sync(coro: Any) -> Any:
+    """
+    Run an async coroutine synchronously from sync context.
+
+    Safe for Python 3.10+ (avoids deprecated get_event_loop()).
+    Handles the case where a running loop already exists (e.g., Jupyter,
+    FastAPI) by using a dedicated ThreadPoolExecutor.
+    """
+    try:
+        # Check if there's a running event loop in the current thread
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop — safe to use asyncio.run()
+        return asyncio.run(coro)
+
+    # Running loop exists — run in a separate thread with its own loop
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(asyncio.run, coro)
+        return future.result()

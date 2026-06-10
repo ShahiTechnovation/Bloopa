@@ -4,7 +4,7 @@
 project_excludes = [
     "contracts/**",
     "bloopa_sdk/**",
-    "tests/test_oracle.py",
+    "tests/**",
     "contract.py",
 ]
 
@@ -13,6 +13,12 @@ project_excludes = [
 exclude = [
     "contracts",
     "bloopa_sdk",
-    "tests/test_oracle.py",
+    "tests",
     "contract.py",
+]
+
+[tool.pytest.ini_options]
+# Register custom markers to suppress PytestUnknownMarkWarning
+markers = [
+    "integration: marks tests as integration tests requiring live Algorand testnet access (deselect with '-m not integration')",
 ]

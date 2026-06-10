@@ -102,6 +102,55 @@ def _make_mock_agent(
     return agent
 
 
+# GoPlausible real 402 format helpers
+
+_TESTNET_NETWORK = "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI="
+
+
+def _make_real_402_body(
+    amount: int = 1_000,
+    pay_to: str = "MERCHANTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    fee_payer: str = "FACILITATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    network: str = _TESTNET_NETWORK,
+    asset: int = 10_458_941,
+) -> dict:
+    """Build a real GoPlausible x402 402-response body (accepts array format)."""
+    return {
+        "x402Version": 1,
+        "accepts": [
+            {
+                "scheme": "exact",
+                "network": network,
+                "maxAmountRequired": str(amount),
+                "asset": str(asset),
+                "payTo": pay_to,
+                "extra": {
+                    "feePayer": fee_payer,
+                    "name": "USDC",
+                    "decimals": 6,
+                },
+            }
+        ],
+        "error": "X402 Payment Required",
+    }
+
+
+def _make_flat_402_body(
+    amount: int = 1_000,
+    pay_to: str = "MERCHANTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+) -> dict:
+    """Build a flat (legacy/test-server) 402-response body."""
+    return {
+        "scheme": "exact",
+        "amount": str(amount),
+        "asset": "10458941",
+        "payTo": pay_to,
+        "network": _TESTNET_NETWORK,
+        "extra": {},
+    }
+
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests: Exceptions
 # ─────────────────────────────────────────────────────────────────────────────
@@ -266,18 +315,10 @@ class TestBloopX402Client:
         agent = _make_mock_agent()
         client = self._make_client(agent, max_spend_per_call=5_000)
 
-        payment_requirements = {
-            "scheme": "exact",
-            "amount": "50000",        # 50k μUSDC > 5k limit
-            "asset": "10458941",
-            "payTo": "MERCHANTADDR",
-            "network": "algorand:...",
-        }
-
-        # Mock 402 response
+        # 50k μUSDC > 5k limit — use real GoPlausible format
         mock_402 = MagicMock()
         mock_402.status_code = 402
-        mock_402.json.return_value = payment_requirements
+        mock_402.json.return_value = _make_real_402_body(amount=50_000)
 
         with patch("httpx.AsyncClient") as mock_http_cls:
             mock_http = AsyncMock()
@@ -294,6 +335,7 @@ class TestBloopX402Client:
         # Verify draw was NOT called
         agent.draw.assert_not_called()
 
+
     # ── successful payment flow ───────────────────────────────────────────────
 
     def test_successful_payment_calls_record_payment(self):
@@ -301,18 +343,9 @@ class TestBloopX402Client:
         agent = _make_mock_agent()
         client = self._make_client(agent, max_spend_per_call=100_000)
 
-        payment_requirements = {
-            "scheme": "exact",
-            "amount": "1000",
-            "asset": "10458941",
-            "payTo": "MERCHANTADDR" + "A" * 42,
-            "network": "algorand:SGO1...",
-            "extra": {},
-        }
-
         mock_402 = MagicMock()
         mock_402.status_code = 402
-        mock_402.json.return_value = payment_requirements
+        mock_402.json.return_value = _make_real_402_body(amount=1_000)
 
         mock_200 = MagicMock()
         mock_200.status_code = 200
@@ -337,23 +370,15 @@ class TestBloopX402Client:
         # record_payment should have been called
         agent.record_payment.assert_called_once()
 
+
     def test_failed_payment_does_not_call_record_payment(self):
         """On failure (not 200 after payment), record_payment must NOT be called."""
         agent = _make_mock_agent()
         client = self._make_client(agent, max_spend_per_call=100_000)
 
-        payment_requirements = {
-            "scheme": "exact",
-            "amount": "1000",
-            "asset": "10458941",
-            "payTo": "MERCHANTADDR" + "A" * 42,
-            "network": "algorand:...",
-            "extra": {},
-        }
-
         mock_402_first = MagicMock()
         mock_402_first.status_code = 402
-        mock_402_first.json.return_value = payment_requirements
+        mock_402_first.json.return_value = _make_real_402_body(amount=1_000)
 
         mock_402_retry = MagicMock()
         mock_402_retry.status_code = 402
@@ -377,6 +402,7 @@ class TestBloopX402Client:
         # record_payment must NOT have been called on failure
         agent.record_payment.assert_not_called()
 
+
     # ── USDC conversion ──────────────────────────────────────────────────────
 
     def test_usdc_to_algo_conversion_math(self):
@@ -398,18 +424,10 @@ class TestBloopX402Client:
         agent = _make_mock_agent()
         client = self._make_client(agent, max_spend_per_call=100_000)
 
-        payment_requirements = {
-            "scheme": "exact",
-            "amount": "2000",           # 2000 μUSDC * 2.5 = 5000 μALGO
-            "asset": "10458941",
-            "payTo": "MERCHANTADDR" + "A" * 42,
-            "network": "algorand:...",
-            "extra": {},
-        }
-
+        # 2000 μUSDC * 2.5 = 5000 μALGO — use real GoPlausible format
         mock_402 = MagicMock()
         mock_402.status_code = 402
-        mock_402.json.return_value = payment_requirements
+        mock_402.json.return_value = _make_real_402_body(amount=2_000)
 
         mock_200 = MagicMock()
         mock_200.status_code = 200
@@ -429,6 +447,7 @@ class TestBloopX402Client:
         agent.draw.assert_called_once()
         call_kwargs = agent.draw.call_args[1]
         assert call_kwargs["amount_microalgo"] == 5_000
+
 
     # ── opt-in ───────────────────────────────────────────────────────────────
 
@@ -456,7 +475,7 @@ class TestBloopX402Client:
     # ── manual X-PAYMENT header ──────────────────────────────────────────────
 
     def test_manual_header_structure(self):
-        """_build_manual_x_payment_header produces valid base64 JSON."""
+        """_build_manual_x_payment_header produces valid base64 JSON with network field."""
         from bloopa_sdk.x402_client import BloopX402Client
         from algosdk import account
 
@@ -477,10 +496,10 @@ class TestBloopX402Client:
 
         req = {
             "scheme": "exact",
-            "amount": "1000",
-            "asset": "10458941",
+            "amount": 1_000,
+            "asset": 10_458_941,
             "payTo": address,   # use valid address
-            "network": "algorand:...",
+            "network": _TESTNET_NETWORK,
             "extra": {},        # no feePayer
         }
 
@@ -492,11 +511,76 @@ class TestBloopX402Client:
 
         assert payload["x402Version"] == 1
         assert payload["scheme"] == "exact"
+        assert "network" in payload                       # REQUIRED for GoPlausible
+        assert payload["network"] == _TESTNET_NETWORK    # must match
         assert "paymentGroup" in payload["payload"]
         assert payload["payload"]["paymentIndex"] == 0
         assert len(payload["payload"]["paymentGroup"]) >= 1
 
+
+    # ── Payment requirements parser ───────────────────────────────────────────
+
+    def test_parse_real_goplausible_402_format(self):
+        """Parser correctly handles real GoPlausible 'accepts' array format."""
+        from bloopa_sdk.x402_client import BloopX402Client
+        client = BloopX402Client(_make_mock_agent(), auto_opt_in=False, auto_swap=False)
+
+        body = _make_real_402_body(amount=5_000, pay_to="MERCHANT" + "A" * 50)
+        parsed = client._parse_payment_requirements(body)
+
+        assert parsed["scheme"] == "exact"
+        assert parsed["amount"] == 5_000
+        assert parsed["asset"] == 10_458_941
+        assert parsed["payTo"].startswith("MERCHANT")
+        assert parsed["network"] == _TESTNET_NETWORK
+        assert "feePayer" in parsed["extra"]
+
+    def test_parse_flat_fallback_format(self):
+        """Parser falls back gracefully to simple flat format."""
+        from bloopa_sdk.x402_client import BloopX402Client
+        client = BloopX402Client(_make_mock_agent(), auto_opt_in=False, auto_swap=False)
+
+        body = _make_flat_402_body(amount=2_500)
+        parsed = client._parse_payment_requirements(body)
+
+        assert parsed["amount"] == 2_500
+        assert parsed["scheme"] == "exact"
+
+    def test_parse_network_mismatch_raises(self):
+        """Parser raises BloopX402PaymentError when no matching network found."""
+        from bloopa_sdk.x402_client import BloopX402Client
+        client = BloopX402Client(_make_mock_agent(), auto_opt_in=False, auto_swap=False)
+
+        body = {
+            "x402Version": 1,
+            "accepts": [
+                {
+                    "scheme": "exact",
+                    "network": "ethereum:1",   # wrong chain
+                    "maxAmountRequired": "1000",
+                    "asset": "USDC",
+                    "payTo": "0xabc...",
+                    "extra": {},
+                }
+            ],
+        }
+        with pytest.raises(BloopX402PaymentError, match="No matching"):
+            client._parse_payment_requirements(body)
+
+    def test_parse_amount_as_int_string(self):
+        """Parser handles maxAmountRequired as string '1000' → int 1000."""
+        from bloopa_sdk.x402_client import BloopX402Client
+        client = BloopX402Client(_make_mock_agent(), auto_opt_in=False, auto_swap=False)
+
+        body = _make_real_402_body(amount=999)
+        # Manually set as string to verify coercion
+        body["accepts"][0]["maxAmountRequired"] = "999"
+        parsed = client._parse_payment_requirements(body)
+        assert parsed["amount"] == 999
+        assert isinstance(parsed["amount"], int)
+
     # ── USDC balance ─────────────────────────────────────────────────────────
+
 
     def test_usdc_balance_returns_correct_value(self):
         agent = _make_mock_agent(usdc_balance=123_456)

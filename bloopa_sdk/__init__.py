@@ -31,7 +31,7 @@ x402 HTTP-native payments (requires: pip install "bloopa-sdk[x402]")::
 """
 
 from .oracle import RiskOracle, RiskDecision, CriteriaEvaluation
-from .agent import BloopaCreditAgent
+from .agent import BloopaCreditAgent, ProtocolConfig
 from .exceptions import (
     BloopaCreditDenied,
     BloopaCreditError,
@@ -59,6 +59,7 @@ def __getattr__(name: str):
 __all__ = [
     # Core
     "BloopaCreditAgent",
+    "ProtocolConfig",
     "RiskOracle",
     "RiskDecision",
     "CriteriaEvaluation",
