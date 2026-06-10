@@ -1,5 +1,5 @@
 """
-test_oracle.py — Offline unit tests for the Bloopa SDK RiskOracle.
+tests/test_oracle.py — Offline unit tests for the Bloopa SDK RiskOracle.
 
 Runs without network access. The Venice API and algod client are fully mocked.
 All tests use ORACLE_PROVIDER=venice (the default) unless explicitly testing
@@ -14,7 +14,7 @@ Tests:
   6. Anthropic provider path — _anthropic_client used instead of _openai_client.
 
 Run:
-    python test_oracle.py
+    python tests/test_oracle.py
 """
 
 import json

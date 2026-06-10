@@ -1,4 +1,4 @@
-# demo_narration.md — Bloopa Demo Video Script
+# demo/demo_narration.md — Bloopa Demo Video Script
 
 ## Setup (Before You Hit Record)
 
@@ -7,7 +7,7 @@
 | Browser tab | `testnet.explorer.perawallet.app/application/762466410` |
 | Terminal font size | 16px minimum |
 | Screen layout | Terminal left 60% · Browser right 40% |
-| Run command | `python demo_with_skill.py` |
+| Run command | `python demo/demo_with_skill.py` |
 | Pre-flight check | `outstanding == 0`, `daily_drawn` has headroom |
 
 ---

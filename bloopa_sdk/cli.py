@@ -248,7 +248,7 @@ def init(network: str, stake: int) -> None:
     click.echo("  1. Set VENICE_API_KEY in your shell or .env")
     click.echo("     export VENICE_API_KEY=your-venice-api-key")
     click.echo("  2. Run the demo:")
-    click.echo("     VENICE_API_KEY=your-key python demo_with_skill.py")
+    click.echo("     VENICE_API_KEY=your-key python demo/demo_with_skill.py")
     click.echo("  3. Build tier by running record_payment():")
     click.echo(
         "     agent.record_payment() \u2014 10 times \u2192 Tier 1 (0.50 ALGO draws)"

@@ -46,7 +46,8 @@ const NAV_GROUPS = [
     title: "INTEGRATIONS",
     isHighlighted: false,
     items: [
-      { id: "x402", label: "x402 Integration", icon: "payments" }
+      { id: "x402", label: "x402 Integration", icon: "payments" },
+      { id: "intents", label: "Intent Router", icon: "swap_calls" }
     ]
   }
 ];
@@ -111,6 +112,13 @@ const TOC_MAP = {
     { label: "Python Client", href: "#x402-python" },
     { label: "Tier Caps", href: "#x402-tiers" },
     { label: "Installation", href: "#x402-install" }
+  ],
+  intents: [
+    { label: "Intent Router", href: "#intents-top" },
+    { label: "Architecture", href: "#intents-arch" },
+    { label: "Solver Agent", href: "#intents-solver" },
+    { label: "Atomic Settle", href: "#intents-settle" },
+    { label: "Running the Demo", href: "#intents-demo" }
   ]
 };
 

@@ -518,41 +518,77 @@ function QuickStart() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 18, marginBottom: 8 }} id="clone-sdk">
-          Step 1. Clone the SDK Repository
+          Step 1. Clone & Install the Repository
         </h3>
+        <BodyText>
+          Clone the main project repository and install the Bloopa SDK in editable mode.
+        </BodyText>
         <CodeBlock lang="bash">
-{`git clone https://github.com/bloopa-protocol/bloopa-sdk
-cd bloopa-sdk
-pip install -r requirements.txt`}
+{`git clone https://github.com/ShahiTechnovation/Bloopa
+cd Bloopa
+pip install -e "./bloopa_sdk"`}
+        </CodeBlock>
+
+        <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 18, marginBottom: 8 }} id="bootstrap-cli">
+          Step 2. Bootstrap via CLI
+        </h3>
+        <BodyText>
+          Use the built-in CLI command to generate a new developer wallet mnemonic, request faucet funding, opt-in to the contract, and stake ALGO collateral.
+        </BodyText>
+        <CodeBlock lang="bash">
+{`bloopa init --network testnet`}
+        </CodeBlock>
+        <CodeBlock lang="terminal output">
+{`[1/6] Generating agent keypair...
+      Address: 7XQ3...DEMO
+[2/6] Funding wallet...
+      Requesting from Algonode testnet faucet...
+      Faucet request sent. Waiting...
+[3/6] Waiting 6 rounds for funding to confirm (~6 seconds)...
+[4/6] Connecting to Algorand testnet...
+[5/6] Opting in to Bloopa contract...
+      Opted in. Txn: OPTIN_TXID...
+[6/6] Registering with Bloopa (staking 1,000,000 μA)...
+      Registered! Txn: REGISTER_TXID...
+      Credentials saved to .bloopa.env
+      ⚠ Keep .bloopa.env secret. Add it to .gitignore.
+──────────────────────────────────────────────────
+Done. Bloopa agent ready.`}
         </CodeBlock>
 
         <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 18, marginBottom: 8 }} id="setup-env">
-          Step 2. Set Up Environment Variables
+          Step 3. Set Up API Key
         </h3>
         <BodyText>
-          Create a <code>.env</code> file in your project root containing your secret keys and configurations.
+          Your environment file <code>.bloopa.env</code> has been created automatically. Just append your LLM provider key to it (e.g. Venice AI or Anthropic API Key).
         </BodyText>
-        <CodeBlock lang=".env">
-{`AGENT_MNEMONIC="word1 word2 word3 ... word25"
+        <CodeBlock lang=".bloopa.env">
+{`BLOOPA_ADDRESS=7XQ3...DEMO
+BLOOPA_MNEMONIC="word1 word2 word3 ... word25"
+BLOOPA_NETWORK=testnet
 BLOOPA_APP_ID=762466410
-VENICE_API_KEY="vn_..."
-ORACLE_PROVIDER="venice"`}
+ALGOD_URL=https://testnet-api.algonode.cloud
+VENICE_API_KEY=your-venice-api-key`}
         </CodeBlock>
 
         <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 18, marginBottom: 8 }} id="run-demo">
-          Step 3. Run the Live Demo Agent
+          Step 4. Run the Live Demo Agent
         </h3>
+        <BodyText>
+          Run the combination skill and credit demo which demonstrates an approved price-feed check and a denied speculative check.
+        </BodyText>
         <CodeBlock lang="bash">
-{`python skill.py`}
+{`python demo/demo_with_skill.py`}
         </CodeBlock>
-        <CodeBlock lang="terminal output">
-{`[BLOOPA] Initializing Credit Agent...
-[NETWORK] Connected to Algorand Testnet (App ID: 762466410)
-[ORACLE] Requesting risk assessment from LLM Oracle...
-[ORACLE] Decision: APPROVED (LLM Confidence: 94.2%, Grade: A)
-[TX] Submitting on-chain Draw request for 50,000 microALGO...
-[TX] Success! Transaction ID: YXZ89...3BQ
-[AGENT] Local vault loaded. Operational loop running...`}
+
+        <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 18, marginBottom: 8 }} id="run-tests">
+          Step 5. Run the Local Test Suite
+        </h3>
+        <BodyText>
+          Validate your local SDK setup by running the offline unit tests using <code>pytest</code>.
+        </BodyText>
+        <CodeBlock lang="bash">
+{`python -m pytest tests/ -v`}
         </CodeBlock>
 
         <Callout type="warning" title="Testnet Faucet">
@@ -1297,6 +1333,138 @@ print(response.json())  # {"price": 2814.22}
 }
 
 
+// 10. Intent Router View
+function IntentsView() {
+  const routerFlow = [
+    { n: "01", text: "User1 locks ALGO into the BloopIntentRouter contract representing a swap order (e.g. 0.20 ALGO to USDC, with a specified private solver address and expiry round)." },
+    { n: "02", text: "Agent2 (solver) polls the indexer logs, detects the private intent, and parses the intent ID and parameters." },
+    { n: "03", text: "Agent2's IntentBrain runs local pre-flight checks (profit ratio, time headroom, tier caps, debt checks) and then queries the Venice/Anthropic LLM oracle." },
+    { n: "04", text: "Agent2 draws credit from Bloopa core contract via BloopaCreditAgent.draw()." },
+    { n: "05", text: "Agent2 claims the intent on the Router contract via borrow_to_execute()." },
+    { n: "06", text: "Agent2 executes the swap (calling Tinyman v2 AMM or mock equivalent)." },
+    { n: "07", text: "Agent2 calls Router.settle() which atomically repays Bloopa, sends solver profit, records payment to increment solver's on-chain count, and logs the result." }
+  ];
+
+  return (
+    <div className="animate-fade-in" style={{ width: "100%" }} id="intents-top">
+      <SectionLabel>Integrations</SectionLabel>
+
+      <div
+        style={{
+          display: "inline-block",
+          background: "#a5f3fc",
+          color: "#000000",
+          border: "2px solid #000000",
+          padding: "4px 12px",
+          fontFamily: "var(--mono)",
+          fontSize: "11px",
+          fontWeight: "bold",
+          marginBottom: "16px",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        [ INTENT ROUTER MARKET ]
+      </div>
+
+      <SkewedHeading bg="#000" fg="#fff" angle={-1}>
+        Intent Router
+      </SkewedHeading>
+
+      <BodyText style={{ maxWidth: 720 }}>
+        BloopIntentRouter is Algorand's first intent-based swap solver market, inspired by NEAR Intents and Across Protocol, utilizing Bloopa credit to fund solvers.
+      </BodyText>
+
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="intents-arch">
+        System Architecture
+      </h3>
+      <BodyText>
+        Solver agents don't need upfront capital. They borrow microALGO from Bloopa, perform the intent fulfillment, and settle atomically.
+      </BodyText>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 36 }}>
+        {routerFlow.map((step) => (
+          <div
+            key={step.n}
+            style={{
+              display: "flex",
+              gap: 16,
+              alignItems: "flex-start",
+              background: step.n === "03" || step.n === "07" ? "#e0f2fe" : "#ffffff",
+              border: "3px solid #000000",
+              boxShadow: "3px 3px 0 #000000",
+              padding: "16px 20px",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 900,
+                fontSize: 22,
+                color: step.n === "03" || step.n === "07" ? "#0284c7" : "#737373",
+                minWidth: 38,
+                lineHeight: 1,
+                paddingTop: 2,
+              }}
+            >
+              {step.n}
+            </div>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: 14, lineHeight: 1.6, color: "#1a1a1a" }}>
+              {step.text}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="intents-solver">
+        The Solver Agent Code
+      </h3>
+      <BodyText>
+        Solvers use <code>IntentListener</code>, <code>IntentBrain</code>, and <code>IntentExecutor</code> modules to manage intents and execute settlements automatically.
+      </BodyText>
+      <CodeBlock lang="python">
+{`from bloopa_sdk.intent_agent import IntentListener, IntentBrain, IntentExecutor
+
+# Initialize three-layer agent stack
+listener = IntentListener(router_app_id=YOUR_ROUTER_APP_ID, solver_address=agent.address)
+brain = IntentBrain(agent=bloopa_agent, min_profit_ratio=0.10)
+executor = IntentExecutor(agent=bloopa_agent, router_app_id=YOUR_ROUTER_APP_ID, task_handler=swap_handler, brain=brain)
+
+# Start polling indexer for private solver orders
+listener.run_forever(on_intent_callback=executor.handle_intent)`}
+      </CodeBlock>
+
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="intents-settle">
+        Atomic Settle Contract Call
+      </h3>
+      <BodyText>
+        The Router contract's <code>settle()</code> method performs 4 operations atomically:
+      </BodyText>
+      <CodeBlock lang="TEAL Inner Transactions">
+{`// 1. Repay Bloopa core credit + accrued interest (Payment Txn to App Address)
+// 2. Pay solver profit (Payment Txn to Solver Wallet)
+// 3. Call record_payment(api_cost) on Bloopa contract to increment reputation tier
+// 4. Log results on-chain for verification`}
+      </CodeBlock>
+
+      <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "32px 0 16px" }} id="intents-demo">
+        Running the Demo
+      </h3>
+      <BodyText>
+        Deploy the router and run the local intent solver demo on Algorand testnet:
+      </BodyText>
+      <CodeBlock lang="bash">
+{`# 1. Deploy the router contract
+ADMIN_MNEMONIC="..." BLOOPA_APP_ID=762466410 python contracts/deploy_router.py
+
+# 2. Run the intent solver lifecycle demo
+python demo/intent_demo.py`}
+      </CodeBlock>
+    </div>
+  );
+}
+
+
 /* ── Fallback Placeholder ── */
 function Placeholder({ section }) {
   return (
@@ -1321,6 +1489,7 @@ const PAGE_MAP = {
   abi: () => <AbiView />,
   guides: () => <GuidesView />,
   x402: () => <X402View />,
+  intents: () => <IntentsView />,
 };
 
 export default function DocsPage({ activePage, onNavigate }) {

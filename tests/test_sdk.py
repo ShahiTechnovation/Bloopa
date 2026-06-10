@@ -1,5 +1,5 @@
 """
-test_sdk.py — Offline unit tests for the Bloopa SDK.
+tests/test_sdk.py — Offline unit tests for the Bloopa SDK.
 
 Runs without network access. Both the Venice API and the algod client are
 fully mocked so tests pass in CI without any environment variables.
@@ -13,9 +13,9 @@ Tests:
   6. Anthropic provider path — uses _anthropic_client instead of _openai_client.
 
 Run with:
-    python test_sdk.py
+    python tests/test_sdk.py
 or:
-    python -m pytest test_sdk.py -v
+    python -m pytest tests/test_sdk.py -v
 """
 
 import json

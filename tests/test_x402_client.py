@@ -1,11 +1,11 @@
 """
-test_x402_client.py — Unit tests for BloopX402Client.
+tests/test_x402_client.py — Unit tests for BloopX402Client.
 
 Runs without network access (all external calls are mocked).
 No Algorand wallet or x402-avm installation required.
 
 Run:
-    python -m pytest test_x402_client.py -v
+    python -m pytest tests/test_x402_client.py -v
 """
 
 import asyncio

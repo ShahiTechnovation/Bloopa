@@ -145,7 +145,7 @@ The on-chain `draw()` transaction is never submitted when the oracle denies.
 export ORACLE_PROVIDER=anthropic
 export ANTHROPIC_API_KEY=sk-ant-...
 pip install -e "./bloopa_sdk[anthropic]"
-python demo_with_skill.py
+python demo/demo_with_skill.py
 ```
 
 Model: `claude-haiku-4-5-20251001`. Uses `client.beta.messages.parse()` for structured output. The returned `RiskDecision` object is identical regardless of provider.

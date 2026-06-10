@@ -4,7 +4,7 @@
 project_excludes = [
     "contracts/**",
     "bloopa_sdk/**",
-    "test_oracle.py",
+    "tests/test_oracle.py",
     "contract.py",
 ]
 
@@ -13,6 +13,6 @@ project_excludes = [
 exclude = [
     "contracts",
     "bloopa_sdk",
-    "test_oracle.py",
+    "tests/test_oracle.py",
     "contract.py",
 ]

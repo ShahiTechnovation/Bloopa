@@ -55,7 +55,7 @@ except BloopaCreditDenied as e:
 
 **Run the full demo**
 ```bash
-VENICE_API_KEY=your-key python demo_with_skill.py
+VENICE_API_KEY=your-key python demo/demo_with_skill.py
 ```
 
 ---
@@ -255,10 +255,10 @@ cp contracts/.env.example contracts/.env
 # Fill in: AGENT_MNEMONIC, BLOOPA_APP_ID=762466410, VENICE_API_KEY
 
 # Run demo
-python demo_with_skill.py
+python demo/demo_with_skill.py
 
 # Run tests
-python test_sdk.py
+python tests/test_sdk.py
 ```
 
 ---
@@ -303,7 +303,7 @@ The LLM provider is controlled by the `ORACLE_PROVIDER` environment variable.
 ```bash
 export ORACLE_PROVIDER=venice
 export VENICE_API_KEY=your-venice-key
-python demo_with_skill.py
+python demo/demo_with_skill.py
 ```
 
 Model: `llama-3.3-70b`. No extra install required (`openai` package already included).
@@ -314,7 +314,7 @@ Model: `llama-3.3-70b`. No extra install required (`openai` package already incl
 export ORACLE_PROVIDER=anthropic
 export ANTHROPIC_API_KEY=sk-ant-...
 pip install -e "./bloopa_sdk[anthropic]"
-python demo_with_skill.py
+python demo/demo_with_skill.py
 ```
 
 Model: `claude-haiku-4-5-20251001`. Uses `client.beta.messages.parse()` for structured output.

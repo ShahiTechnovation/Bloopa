@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-demo_with_skill.py -- End-to-end demonstration of the Bloopa SDK with Venice AI Risk Skill.
+demo/demo_with_skill.py -- End-to-end demonstration of the Bloopa SDK with Venice AI Risk Skill.
 
 Demonstrates:
   1. Successful draw (approved task) -> repay cycle
@@ -9,7 +9,7 @@ Demonstrates:
 Loads credentials from .env or environment variables.
 
 Usage:
-    python demo_with_skill.py
+    python demo/demo_with_skill.py
 
 Required env vars:
     AGENT_MNEMONIC   -- 25-word Algorand mnemonic
