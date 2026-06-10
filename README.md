@@ -7,6 +7,59 @@
 
 ---
 
+## Quick Start
+
+**Install**
+```bash
+pip install bloopa-sdk
+```
+
+**One command to bootstrap your agent wallet**
+```bash
+bloopa init --network testnet
+```
+*Generates a wallet, funds it from the testnet faucet, opts in,
+stakes 1 ALGO, and writes `.bloopa.env` — in under 30 seconds.*
+
+**Draw credit in Python**
+```python
+import os
+from dotenv import load_dotenv
+from bloopa_sdk import BloopaCreditAgent, BloopaCreditDenied
+
+load_dotenv(".bloopa.env")
+
+agent = BloopaCreditAgent(
+    mnemonic_phrase=os.environ["BLOOPA_MNEMONIC"],
+    app_id=int(os.environ["BLOOPA_APP_ID"]),  # 762466410 testnet
+)
+
+try:
+    result = agent.draw(
+        amount_microalgo=50_000,
+        task_description="Fetch ETH/USD price from CoinGecko public API",
+        expected_return_microalgo=80_000,
+        estimated_task_rounds=120,
+    )
+    print(f"Approved — txid: {result['txid']}")
+    print(f"Oracle: {result['risk_summary']}")
+
+    # ... run your task here ...
+
+    agent.repay(result["total_repayable"])
+    agent.record_payment()  # builds on-chain tier history
+
+except BloopaCreditDenied as e:
+    print(f"Denied: {e.reason}")  # no transaction was submitted
+```
+
+**Run the full demo**
+```bash
+VENICE_API_KEY=your-key python demo_with_skill.py
+```
+
+---
+
 ## What Is Bloopa?
 
 AI agents can execute code, call APIs, and transact on-chain autonomously — but they cannot borrow money. There is no credit bureau for software bots. Today, if an agent runs out of funds mid-task, it stops. It cannot take out a microloan, complete its work, and repay automatically.
@@ -145,6 +198,34 @@ pip install bloopa-sdk "x402-avm[avm,httpx]"
 ```
 
 The `BloopX402Client` handles the 402 → draw → pay → retry → repay → record_payment loop automatically. The developer never touches algosdk directly.
+
+---
+
+## Intent Router — Algorand's First Intent-Based Swap with Agent Credit
+
+Inspired by NEAR Intents ($7B+ volume) and Across Protocol. Built natively
+on Algorand with Bloopa as the credit layer.
+
+**Flow:**
+1. Agent1 locks ALGO into the Router contract for a swap task
+2. Agent2 detects the private order (assigned to their address only)
+3. Agent2's Bloopa oracle evaluates profitability and risk
+4. Agent2 draws credit from Bloopa to fund the swap
+5. Atomic settlement: Bloopa repaid + Agent2 profit in one transaction group
+
+**Run the demo:**
+```bash
+python demo/intent_demo.py
+```
+
+**Deploy the Router:**
+```bash
+ADMIN_MNEMONIC="..." BLOOPA_APP_ID=762466410 python contracts/deploy_router.py
+```
+
+**No equivalent exists on Algorand.** Tinyman, Pact, and Folks Finance are AMMs
+and lending protocols. None have an intent-based solver market. Bloopa Intent
+Router is the first.
 
 ---
 

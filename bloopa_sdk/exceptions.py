@@ -46,3 +46,79 @@ class BloopaCreditDenied(BloopaCreditError):
         self.reason = reason
         self.criteria_results = criteria_results
         super().__init__(reason)
+
+
+# ── x402 exceptions ────────────────────────────────────────────────────────────
+
+
+class BloopX402SpendLimitExceeded(BloopaCreditError):
+    """Raised when the 402 payment amount exceeds max_spend_per_call.
+
+    This guard fires BEFORE agent.draw() is called — no credit is drawn
+    and no USDC is spent when this exception is raised.
+
+    Attributes:
+        amount:   Requested amount in microUSDC from the 402 response.
+        limit:    Configured max_spend_per_call in microUSDC.
+
+    Example::
+
+        client = BloopX402Client(agent, max_spend_per_call=5_000)
+        try:
+            client.get("https://pricey.api.com/endpoint")  # costs 50_000 μUSDC
+        except BloopX402SpendLimitExceeded as e:
+            print(f"Too expensive: {e.amount} > {e.limit} microUSDC")
+    """
+
+    def __init__(self, amount: int, limit: int) -> None:
+        self.amount = amount
+        self.limit = limit
+        super().__init__(
+            f"402 amount {amount} microUSDC exceeds max_spend_per_call={limit} microUSDC"
+        )
+
+
+class BloopX402PaymentError(BloopaCreditError):
+    """Raised when the x402 payment flow fails after the draw.
+
+    Possible causes:
+    - GoPlausible facilitator returned isValid=False
+    - Facilitator settle failed (txn rejected on-chain)
+    - Network timeout communicating with facilitator
+
+    Attributes:
+        reason:   Human-readable failure description.
+        txn_url:  Algorand explorer URL for the failed txn (if available).
+
+    Example::
+
+        try:
+            client.get("https://x402.goplausible.xyz/examples/weather")
+        except BloopX402PaymentError as e:
+            print(f"Payment failed: {e.reason}")
+    """
+
+    def __init__(self, reason: str, txn_url: str | None = None) -> None:
+        self.reason = reason
+        self.txn_url = txn_url
+        super().__init__(f"x402 payment failed: {reason}")
+
+
+class BloopX402SetupError(BloopaCreditError):
+    """Raised when the wallet setup is incomplete for x402 payments.
+
+    Common causes:
+    - Wallet not opted-in to the USDC ASA
+    - Insufficient USDC balance after auto-swap
+    - Auto opt-in transaction failed
+
+    Example::
+
+        try:
+            client = BloopX402Client(agent)
+        except BloopX402SetupError as e:
+            print(f"Setup incomplete: {e}")
+    """
+
+    pass
+

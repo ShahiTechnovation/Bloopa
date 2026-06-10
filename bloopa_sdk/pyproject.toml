@@ -41,17 +41,28 @@ dependencies = [
   "openai>=1.0.0",
   "pydantic>=2.0.0",
   "python-dotenv>=1.0.0",
+  "click>=8.0.0",
+  "requests>=2.28.0",
 ]
 
 [project.optional-dependencies]
 anthropic = [
   "anthropic>=0.42.0",
 ]
+x402 = [
+  "x402-avm[avm,httpx]>=2.0.0,<3.0.0",
+  "httpx>=0.28.1",
+]
 dev = [
   "pytest>=8.0.0",
   "pytest-mock>=3.14.0",
   "build>=1.2.0",
   "twine>=5.0.0",
+]
+all = [
+  "anthropic>=0.42.0",
+  "x402-avm[avm,httpx]>=2.0.0,<3.0.0",
+  "httpx>=0.28.1",
 ]
 
 [project.urls]
@@ -67,3 +78,6 @@ include = ["bloopa_sdk*"]
 
 [tool.setuptools.package-data]
 bloopa_sdk = ["py.typed", "README.md", "CHANGELOG.md"]
+
+[project.scripts]
+bloopa = "bloopa_sdk.cli:init"
