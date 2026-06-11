@@ -1,9 +1,8 @@
 # Bloopa — Architecture Reference
 
-> **Repository:** `ShahiTechnovation/Bloopa`  
-> **Stack:** Algorand (AVM) · Python 3.11+ · React 18 · x402  
-> **Network:** Algorand Testnet (App ID `762466410`)  
-> **Version:** SDK v0.2.0 — analysed line-by-line, June 2026
+**Stack:** Algorand (AVM) · Python 3.11+ · React 18 · x402  
+**Network:** Algorand Testnet · App ID `762466410`  
+**SDK:** v0.2.0
 
 ---
 
@@ -157,7 +156,7 @@ Bloopa/
 
 ## 3. On-Chain Layer — Smart Contracts
 
-### 3.1 Bloopa Core Contract ([`contracts/contract.py`](file:///p:/Bloopa/contracts/contract.py))
+### 3.1 Bloopa Core Contract (`contracts/contract.py`)
 
 **Language:** Algorand Python (Puya compiler) → compiled to TEAL  
 **ARC standard:** ARC-4 (ABI methods + events)  
@@ -216,7 +215,7 @@ This hash must be computed off-chain in `hash_util.compute_attestation_hash()` a
 
 ---
 
-### 3.2 BloopIntentRouter Contract ([`contracts/bloopa_router.py`](file:///p:/Bloopa/contracts/bloopa_router.py))
+### 3.2 BloopIntentRouter Contract (`contracts/bloopa_router.py`)
 
 **Language:** Algorand Python (Puya)  
 **Storage:** BoxMap keyed by `b"I" + UInt64(intent_id).bytes`
@@ -298,7 +297,7 @@ cli.py                                (standalone CLI)
 
 ### 4.2 `criteria.py` — Tier System Constants
 
-**File:** [`bloopa_sdk/criteria.py`](file:///p:/Bloopa/bloopa_sdk/criteria.py) (118 lines)
+**File:** `bloopa_sdk/criteria.py`
 
 Pure-Python constants that **must exactly mirror** the on-chain contract. No algosdk or LLM imports.
 
@@ -323,7 +322,7 @@ interest = (amount * APR_bps * DAY_IN_ROUNDS) // (10_000 * ROUNDS_PER_YEAR)
 
 ### 4.3 `hash_util.py` — Attestation Hash
 
-**File:** [`bloopa_sdk/hash_util.py`](file:///p:/Bloopa/bloopa_sdk/hash_util.py) (73 lines)
+**File:** `bloopa_sdk/hash_util.py`
 
 | Function | Description |
 |----------|-------------|
@@ -337,7 +336,7 @@ The 32-byte attestation hash is the only on-chain security mechanism that preven
 
 ### 4.4 `chain.py` — ABI Call Wrappers
 
-**File:** [`bloopa_sdk/chain.py`](file:///p:/Bloopa/bloopa_sdk/chain.py) (326 lines)
+**File:** `bloopa_sdk/chain.py`
 
 **No LLM calls. No criteria logic. Pure algosdk mechanics.**
 
@@ -362,13 +361,13 @@ METHOD_GET_POSITION    = Method.from_signature("get_position(address)(9×uint64)
 | `do_record_payment(algod, app_id, addr, key, amount)` | ATC execute | `new_tier: int` |
 | `do_register(algod, app_id, addr, key, stake)` | ATC execute (pay txn) | `txid: str` |
 
-> **Critical design note:** `get_position()` uses `atc.simulate()` not `execute()`. This makes it free (no fees, no rounds) and instant.
+Note: `get_position()` uses `atc.simulate()` rather than `execute()` — this means it costs no fees and doesn't consume a round, so it's safe to call frequently.
 
 ---
 
 ### 4.5 `oracle.py` — LLM Risk Oracle
 
-**File:** [`bloopa_sdk/oracle.py`](file:///p:/Bloopa/bloopa_sdk/oracle.py) (460 lines)
+**File:** `bloopa_sdk/oracle.py`
 
 The oracle is the **immutable AI gatekeeper** — all four criteria are hardcoded. Agent developers cannot override them.
 
@@ -415,7 +414,7 @@ Returned only when `overall_approved == True`. Contains `attestation_hash: bytes
 
 ### 4.6 `agent.py` — BloopaCreditAgent
 
-**File:** [`bloopa_sdk/agent.py`](file:///p:/Bloopa/bloopa_sdk/agent.py) (209 lines)
+**File:** `bloopa_sdk/agent.py`
 
 The **single public class** that wraps oracle + chain into one interface.
 
@@ -456,7 +455,7 @@ agent = BloopaCreditAgent(mnemonic_phrase="...", app_id=762466410)
 
 ### 4.7 `exceptions.py` — Exception Hierarchy
 
-**File:** [`bloopa_sdk/exceptions.py`](file:///p:/Bloopa/bloopa_sdk/exceptions.py)
+**File:** `bloopa_sdk/exceptions.py`
 
 ```
 Exception
@@ -473,7 +472,7 @@ All four x402 errors inherit from `BloopaCreditError` so `except BloopaCreditErr
 
 ### 4.8 `x402_client.py` — BloopX402Client
 
-**File:** [`bloopa_sdk/x402_client.py`](file:///p:/Bloopa/bloopa_sdk/x402_client.py) (1092 lines, optional — requires `pip install "bloopa-sdk[x402]"`)
+**File:** `bloopa_sdk/x402_client.py` (optional — requires `pip install "bloopa-sdk[x402]"`)
 
 **Three classes** with strict internal privacy:
 
@@ -491,13 +490,13 @@ Swap group:  [0] PaymentTxn  ALGO → pool address
 
 Bridges Bloopa's algosdk wallet to the `x402-avm` library's `ClientAvmSigner` protocol.
 
-> **Critical encoding boundary:** `algosdk.encoding.msgpack_decode()` expects a **base64 string**, not raw bytes. The bridge does:
-> ```python
-> b64_str = base64.b64encode(txn_bytes).decode()   # raw → b64
-> txn_obj = encoding.msgpack_decode(b64_str)        # decode
-> signed_b64 = encoding.msgpack_encode(signed_txn)  # encode → b64
-> signed_bytes = base64.b64decode(signed_b64)        # b64 → raw
-> ```
+One subtlety here: `algosdk.encoding.msgpack_decode()` expects a base64 string, not raw bytes. The bridge converts back and forth:
+```python
+b64_str = base64.b64encode(txn_bytes).decode()   # raw → b64
+txn_obj = encoding.msgpack_decode(b64_str)        # decode
+signed_b64 = encoding.msgpack_encode(signed_txn)  # encode → b64
+signed_bytes = base64.b64decode(signed_b64)        # b64 → raw
+```
 
 #### `BloopX402Client` (public)
 
@@ -547,7 +546,7 @@ base64(JSON({
 
 ### 4.9 `intent_agent.py` — Intent Market Stack
 
-**File:** [`bloopa_sdk/intent_agent.py`](file:///p:/Bloopa/bloopa_sdk/intent_agent.py) (564 lines)
+**File:** `bloopa_sdk/intent_agent.py`
 
 Three cooperating classes that implement a solver bot:
 
@@ -595,7 +594,7 @@ listener.run_forever(on_intent_callback=executor.handle_intent)
 
 ### 4.10 `cli.py` — `bloopa init` Command
 
-**File:** [`bloopa_sdk/cli.py`](file:///p:/Bloopa/bloopa_sdk/cli.py) (269 lines)  
+**File:** `bloopa_sdk/cli.py`  
 **Entry point:** `bloopa = "bloopa_sdk.cli:init"` (pyproject.toml)
 
 6-step bootstrap:
@@ -614,7 +613,7 @@ listener.run_forever(on_intent_callback=executor.handle_intent)
 
 ### 4.11 `__init__.py` — Public Surface
 
-**File:** [`bloopa_sdk/__init__.py`](file:///p:/Bloopa/bloopa_sdk/__init__.py) (v0.2.0)
+**File:** `bloopa_sdk/__init__.py`
 
 ```python
 # Always-available (no optional deps):

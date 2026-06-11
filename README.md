@@ -72,65 +72,57 @@ What makes Bloopa different is the risk oracle. Before any draw reaches the chai
 
 ## Live Demo Output
 
-### ✅ Approved draw — ETH price fetch
+### Approved draw — ETH price fetch
 
 ```
-========================================
- BLOOPA CREDIT AGENT — LIVE DEMO
-========================================
-App ID:         762466410
-Agent address:  7XQ3...DEMO
+bloopa-agent v0.2.0 | testnet | app 762466410
+agent: 7XQ3...DEMO
 
-[on-chain] Querying position...
-  stake_amount:    1_000_000 microALGO
-  payment_count:   22
-  credit_limit:    12_000_000 microALGO
-  outstanding:     0 microALGO
-  tier:            1 (Trusted)  |  APR: 16.00%
+fetching position...
+  stake_amount:   1000000 uALGO
+  payment_count:  22
+  outstanding:    0
+  tier:           1 (Trusted), APR 16%
 
-Calling LLM risk oracle...
-  ✅ Criterion 1: return (80,000) > cost (50,001) — PASS
-  ✅ Criterion 2: task rounds (120) < 86,400 — PASS
-  ✅ Criterion 3: outstanding == 0 — PASS
-  ✅ Criterion 4: risk level = low — PASS
-  Oracle: APPROVED
-  Risk summary: Low-risk deterministic API call with clear profit margin.
+oracle evaluating draw request (50000 uALGO)...
+  criterion 1 (return > cost):       pass
+  criterion 2 (rounds < 86400):      pass
+  criterion 3 (no outstanding debt): pass
+  criterion 4 (risk level = low):    pass
+  decision: approved
+  summary: Low-risk deterministic API call with clear profit margin.
 
-[on-chain] draw() submitted...
-  txid:             TXID_ABCDEF123456
-  amount drawn:     50,000 microALGO
-  interest:         1 microALGO
-  total repayable:  50,001 microALGO
+submitting draw...
+  txid:    FQJZX7KPNR4YVLBM2CWD8H6SAE3TU5G
+  drawn:   50000 uALGO
+  fee:     1 uALGO
+  owed:    50001 uALGO
 
-Task executing...
-  ETH/USD price: $2,814.22 ✓
+running task: fetching ETH/USD from CoinGecko...
+  result: 2814.22
 
-[on-chain] repay() submitted...
-  txid:             TXID_REPAY789012
-  outstanding:      0 microALGO
-========================================
-  DEMO COMPLETE ✅
-========================================
+repaying 50001 uALGO...
+  txid:    AQNZKM8JCPW6YHRLX4BF7TSVD2EU5GI
+  outstanding: 0
 ```
 
-### 🚫 Denied draw — high-risk arbitrage
+### Denied draw — high-risk arbitrage
 
 ```
---- DEMO 2 — Denied draw ---
-Task: Speculative arbitrage on unaudited new DEX contracts
+bloopa-agent v0.2.0 | testnet | app 762466410
+agent: 7XQ3...DEMO
 
-Calling LLM risk oracle...
-  ✅ Criterion 1: return covers cost — PASS
-  ✅ Criterion 2: task fits window — PASS
-  ✅ Criterion 3: no outstanding debt — PASS
-  ❌ Criterion 4: risk level = critical — FAIL
-
-  Oracle: DENIED
-  Reason: Criterion 4 failed: task risk level is 'critical' —
-          speculative arbitrage on an unaudited contract is never permitted.
+oracle evaluating draw request (500000 uALGO)...
+  task: Speculative arbitrage on unaudited new DEX contracts
+  criterion 1 (return > cost):       pass
+  criterion 2 (rounds < 86400):      pass
+  criterion 3 (no outstanding debt): pass
+  criterion 4 (risk level = critical): FAIL
+  decision: denied
+  reason: task risk level is 'critical' - speculative arbitrage on an
+          unaudited contract is not permitted at any tier.
 
 BloopaCreditDenied raised. No transaction submitted.
-Wallet balance: unchanged.
 ```
 
 ---
@@ -369,13 +361,12 @@ Model: `claude-haiku-4-5-20251001`. Uses `client.beta.messages.parse()` for stru
 
 ## Known Limitations
 
-> [!NOTE]
-> Bloopa is a testnet prototype built at AlgoBharat Hack Series 3.0. These are honest limitations, not bugs.
+Bloopa is a testnet prototype built at AlgoBharat Hack Series 3.0.
 
-- **Slash window is 30 rounds (~30 seconds)** — Intentionally short for demo purposes. Production should use `DAY_IN_ROUNDS` (86,400 rounds ≈ 24 hours).
-- **`payment_count` is self-reported** — Any agent can call `record_payment()` without a real counterparty. V2 requires bilateral signing from both parties.
-- **`skip_attestation=1` on testnet** — The `draw()` contract does not verify the attestation hash in demo mode. Call `enable_attestation()` before mainnet deployment.
-- **Treasury funded manually** — The contract must be seeded with ALGO before any draw can succeed. V2 will implement automated liquidity management.
+- **Slash window is 30 rounds (~30 seconds)** — short enough for a demo run. Production should use `DAY_IN_ROUNDS` (86,400 rounds ≈ 24 hours).
+- **`payment_count` is self-reported** — any agent can call `record_payment()` without a real counterparty. V2 requires bilateral signing from both parties.
+- **`skip_attestation=1` on testnet** — `draw()` does not verify the attestation hash in demo mode. Call `enable_attestation()` before mainnet deployment.
+- **Treasury funded manually** — the contract must be seeded with ALGO before any draw can succeed. V2 will add automated liquidity management.
 
 ---
 
