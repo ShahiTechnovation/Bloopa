@@ -343,3 +343,75 @@ class TestConstants:
 
     def test_all_apr_bps_positive(self):
         assert all(v > 0 for v in TIER_APR_BPS)
+
+
+# ══════════════════════════════════════════════════════════════════
+# USDC criteria tests
+# ══════════════════════════════════════════════════════════════════
+
+from bloopa_sdk.criteria import (
+    max_draw_usdc, daily_cap_usdc, calculate_interest_usdc,
+    TIER_MAX_DRAW_USDC, TIER_DAILY_CAP_USDC,
+    USDC_ASA_ID_TESTNET, USDC_ASA_ID_MAINNET,
+)
+
+
+class TestUsdcConstants:
+
+    def test_usdc_testnet_asa_id(self):
+        assert USDC_ASA_ID_TESTNET == 10_458_941
+
+    def test_usdc_mainnet_asa_id(self):
+        assert USDC_ASA_ID_MAINNET == 31_566_704
+
+    def test_usdc_max_draw_same_usd_as_algo(self):
+        """USDC and ALGO caps have the same USD value (both use 6 decimals)."""
+        assert TIER_MAX_DRAW_USDC == TIER_MAX_DRAW
+
+    def test_usdc_daily_cap_same_usd_as_algo(self):
+        assert TIER_DAILY_CAP_USDC == TIER_DAILY_CAP
+
+    def test_all_tier_lists_same_length(self):
+        assert len(TIER_MAX_DRAW_USDC)  == 4
+        assert len(TIER_DAILY_CAP_USDC) == 4
+
+
+class TestMaxDrawUsdc:
+
+    def test_tier_0_usdc_max_draw(self):
+        assert max_draw_usdc(0) == 100_000
+
+    def test_tier_1_usdc_max_draw(self):
+        assert max_draw_usdc(1) == 500_000
+
+    def test_tier_2_usdc_max_draw(self):
+        assert max_draw_usdc(2) == 2_000_000
+
+    def test_tier_3_usdc_max_draw(self):
+        assert max_draw_usdc(3) == 5_000_000
+
+    def test_increases_with_tier(self):
+        for t in range(3):
+            assert max_draw_usdc(t) < max_draw_usdc(t + 1)
+
+
+class TestCalculateInterestUsdc:
+
+    def test_zero_amount_zero_interest(self):
+        for tier in range(4):
+            assert calculate_interest_usdc(0, tier) == 0
+
+    def test_formula_matches_algo_formula_for_same_amount(self):
+        """Same formula, same amount → same interest regardless of denomination."""
+        for tier in range(4):
+            assert calculate_interest_usdc(50_000, tier) == calculate_interest(50_000, tier)
+
+    def test_higher_tier_lower_interest(self):
+        amount = 100_000
+        interests = [calculate_interest_usdc(amount, t) for t in range(4)]
+        for i in range(3):
+            assert interests[i] >= interests[i + 1]
+
+    def test_non_negative(self):
+        for tier in range(4):
+            assert calculate_interest_usdc(500_000, tier) >= 0

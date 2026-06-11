@@ -115,3 +115,60 @@ def tier_name(tier: int) -> str:
         One of: "Fresh", "Trusted", "Veteran", "Elite".
     """
     return TIER_NAMES[tier]
+
+
+# ── USDC denomination constants (micro-USDC, 6 decimals) ──────────────────────
+# USDC has 6 decimal places. $1.00 = 1,000,000 micro-USDC.
+# Caps are equivalent USD values to ALGO caps.
+
+USDC_ASA_ID_TESTNET: int = 10_458_941
+USDC_ASA_ID_MAINNET: int = 31_566_704
+
+TIER_MAX_DRAW_USDC:  list[int] = [100_000, 500_000, 2_000_000, 5_000_000]
+TIER_DAILY_CAP_USDC: list[int] = [500_000, 2_000_000, 10_000_000, 25_000_000]
+# APR basis points are SHARED with ALGO (same TIER_APR_BPS list)
+
+
+def max_draw_usdc(tier: int) -> int:
+    """Return the maximum single USDC draw amount for a given tier.
+
+    Args:
+        tier: Tier index in range [0, 3].
+
+    Returns:
+        Maximum draw in micro-USDC.
+    """
+    return TIER_MAX_DRAW_USDC[tier]
+
+
+def daily_cap_usdc(tier: int) -> int:
+    """Return the daily USDC draw cap for a given tier.
+
+    Args:
+        tier: Tier index in range [0, 3].
+
+    Returns:
+        Daily cap in micro-USDC.
+    """
+    return TIER_DAILY_CAP_USDC[tier]
+
+
+def calculate_interest_usdc(amount_microusdc: int, tier: int) -> int:
+    """Calculate USDC interest for a one-day loan.
+
+    Uses the identical formula to calculate_interest() but applied to
+    micro-USDC amounts. APR basis points are shared (same tier system).
+
+    Formula (matches on-chain AVM):
+        interest = (amount * APR_bps * DAY_IN_ROUNDS) // (10_000 * ROUNDS_PER_YEAR)
+
+    Args:
+        amount_microusdc: Loan principal in micro-USDC.
+        tier: Tier index in range [0, 3].
+
+    Returns:
+        Interest charge in micro-USDC (integer, floored).
+    """
+    return (amount_microusdc * TIER_APR_BPS[tier] * DAY_IN_ROUNDS) // (
+        10_000 * ROUNDS_PER_YEAR
+    )

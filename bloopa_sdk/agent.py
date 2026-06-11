@@ -28,6 +28,10 @@ from .chain import (
     do_draw,
     do_repay,
     do_record_payment,
+    get_usdc_position,
+    do_draw_usdc,
+    do_repay_usdc,
+    ensure_usdc_opted_in,
     AccountTransactionSigner,
 )
 
@@ -93,6 +97,11 @@ class ProtocolConfig:
 # ── BloopaCreditAgent ──────────────────────────────────────────────────────────
 
 
+# USDC ASA IDs for reference. Pass the correct one to draw_usdc().
+USDC_ASA_ID_TESTNET: int = 10_458_941
+USDC_ASA_ID_MAINNET: int = 31_566_704
+
+
 class BloopaCreditAgent:
     """One-liner credit interface for the Bloopa protocol.
 
@@ -118,6 +127,14 @@ class BloopaCreditAgent:
         )
         # Repay after task completes
         agent.repay(result["total_repayable"])
+
+        # Draw USDC credit (same oracle, same tier, different denomination)
+        result_usdc = agent.draw_usdc(
+            amount_microusdc=100_000,  # $0.10 USDC
+            task_description="Fetch ETH/USD price from CoinGecko",
+            expected_return_microusdc=150_000,
+        )
+        agent.repay_usdc(result_usdc["total_repayable_usdc"])
     """
 
     def __init__(
@@ -127,6 +144,7 @@ class BloopaCreditAgent:
         algod_url: str = "https://testnet-api.algonode.cloud",
         demo_mode: bool | None = None,
         config: ProtocolConfig | None = None,
+        usdc_app_id: int | None = None,
     ) -> None:
         """Initialise the credit agent.
 
@@ -179,6 +197,7 @@ class BloopaCreditAgent:
 
         # ── Wallet + chain ──────────────────────────────────────────────────
         self.app_id = app_id
+        self.usdc_app_id = usdc_app_id if usdc_app_id is not None else app_id
         self.private_key = private_key_from_mnemonic(mnemonic_phrase)
         self.address = address_from_mnemonic(mnemonic_phrase)
         self.algod_client = make_algod_client(self.config.algod_url)
@@ -314,4 +333,146 @@ class BloopaCreditAgent:
             agent_address=self.address,
             private_key=self.private_key,
             amount_microalgo=amount_microalgo,
+        )
+
+    # ── USDC methods ────────────────────────────────────────────────────────────────────
+
+    def get_usdc_position(self) -> dict:
+        """Read the agent's current USDC credit position.
+
+        Returns:
+            Dict with keys: ``usdc_outstanding``, ``usdc_treasury_balance``,
+            ``usdc_asa_id``, ``usdc_tier_max_draw`` — all ``int``.
+        """
+        return get_usdc_position(
+            self.algod_client, self.usdc_app_id, self.address, self.signer
+        )
+
+    def draw_usdc(
+        self,
+        amount_microusdc: int,
+        task_description: str,
+        expected_return_microusdc: int,
+        estimated_task_rounds: int = 300,
+        usdc_asa_id: int = USDC_ASA_ID_TESTNET,
+        auto_optin: bool = True,
+    ) -> dict:
+        """Run the risk oracle then draw USDC credit from the protocol.
+
+        Identical flow to draw() but in USDC denomination:
+          1. get_usdc_position() — fetch usdc_outstanding
+          2. get_position()      — fetch payment_count and outstanding (ALGO)
+          3. oracle.evaluate()   — same 4 criteria, USDC amounts
+          4. ensure_usdc_opted_in() — opt agent into USDC ASA if auto_optin=True
+          5. do_draw_usdc()      — submit the ATC transaction
+
+        Args:
+            amount_microusdc: How much USDC credit to draw in micro-USDC.
+            task_description: Plain-English description for oracle risk evaluation.
+            expected_return_microusdc: Agent's expected revenue in micro-USDC.
+                Must exceed amount + interest to pass criterion 1.
+            estimated_task_rounds: How many Algorand rounds the task will take.
+                Must be < 86,400 to pass criterion 2.
+            usdc_asa_id: USDC ASA ID. Defaults to testnet (10_458_941).
+            auto_optin: If True, automatically opt the agent into the USDC ASA
+                before drawing if they haven't already. Requires one extra txn.
+
+        Returns:
+            Dict with keys:
+                ``txid``, ``amount_microusdc``, ``interest_microusdc``,
+                ``total_repayable_usdc``, ``tier``, ``tier_name``,
+                ``apr_bps``, ``risk_summary``, ``usdc_asa_id``.
+
+        Raises:
+            BloopaCreditDenied: Oracle denied the request.
+            BloopaCreditError: Chain or API failure.
+        """
+        # Read both positions to check cross-denomination stacking
+        usdc_pos  = self.get_usdc_position()
+        algo_pos  = self.get_position()
+
+        # The oracle evaluates against USDC amounts but same 4 criteria
+        decision: RiskDecision = self.oracle.evaluate(
+            agent_address=self.address,
+            amount_microalgo=amount_microusdc,          # oracle uses generic "amount"
+            payment_count=int(algo_pos["payment_count"]),
+            outstanding_microalgo=int(usdc_pos["usdc_outstanding"]),  # USDC outstanding
+            task_description=f"[USDC draw] {task_description}",
+            expected_return_microalgo=expected_return_microusdc,
+            estimated_task_rounds=estimated_task_rounds,
+        )
+
+        # Ensure agent is opted into USDC ASA before receiving the draw
+        if auto_optin:
+            ensure_usdc_opted_in(
+                self.algod_client, self.address, self.private_key, usdc_asa_id
+            )
+
+        txid = do_draw_usdc(
+            algod_client=self.algod_client,
+            app_id=self.usdc_app_id,
+            agent_address=self.address,
+            private_key=self.private_key,
+            amount_microusdc=amount_microusdc,
+            attestation_hash=decision.attestation_hash,
+            usdc_asa_id=usdc_asa_id,
+        )
+
+        return {
+            "txid":                  txid,
+            "amount_microusdc":      amount_microusdc,
+            "interest_microusdc":    decision.interest_microalgo,  # reuse field
+            "total_repayable_usdc":  decision.total_repayable,
+            "tier":                  decision.tier,
+            "tier_name":             decision.tier_name,
+            "apr_bps":               decision.apr_bps,
+            "risk_summary":          decision.criteria.risk_summary,
+            "usdc_asa_id":           usdc_asa_id,
+        }
+
+    def repay_usdc(
+        self,
+        amount_microusdc: int,
+        usdc_asa_id: int = USDC_ASA_ID_TESTNET,
+    ) -> dict:
+        """Repay outstanding USDC credit to the protocol.
+
+        Args:
+            amount_microusdc: Amount to repay in micro-USDC. Use
+                ``result["total_repayable_usdc"]`` from the last draw_usdc
+                for exact repayment.
+            usdc_asa_id: USDC ASA ID. Defaults to testnet (10_458_941).
+
+        Returns:
+            Dict with keys: ``txid``, ``repaid_microusdc``.
+        """
+        txid = do_repay_usdc(
+            algod_client=self.algod_client,
+            app_id=self.usdc_app_id,
+            agent_address=self.address,
+            private_key=self.private_key,
+            amount_microusdc=amount_microusdc,
+            usdc_asa_id=usdc_asa_id,
+        )
+        return {"txid": txid, "repaid_microusdc": amount_microusdc}
+
+    def record_payment_usdc(self, amount_microusdc: int = 1000) -> int:
+        """Record an off-chain USDC payment to increment the USDC payment count.
+
+        Calling this enough times upgrades the agent's USDC credit tier, unlocking
+        higher USDC draw limits and lower USDC APR.
+
+        Args:
+            amount_microusdc: Payment amount to record in micro-USDC.
+                Defaults to 1000.
+
+        Returns:
+            New tier number (0–3) as returned by the contract.
+        """
+        return do_record_payment(
+            algod_client=self.algod_client,
+            app_id=self.usdc_app_id,
+            agent_address=self.address,
+            private_key=self.private_key,
+            amount_microalgo=amount_microusdc,
         )

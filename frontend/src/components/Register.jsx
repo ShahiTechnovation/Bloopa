@@ -60,9 +60,10 @@ function StepIndicator({ currentStep }) {
 
 export default function Register() {
   const { address, connectPera, connectDefly } = useWallet();
-  const { callRegister, loading, isOptedIn } = useContract();
+  const { callRegisterUnified, loading, isOptedIn } = useContract();
   const { addToast } = useToast();
   const [stakeInput, setStakeInput] = useState("1");
+  const [activateUsdc, setActivateUsdc] = useState(true);
   const [txStatus, setTxStatus] = useState("idle"); // idle | signing | submitting | confirming | success | error
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -77,9 +78,12 @@ export default function Register() {
     setErrorMsg("");
     try {
       setTxStatus("submitting");
-      await callRegister(stakeInput);
+      await callRegisterUnified(stakeInput, activateUsdc);
       setTxStatus("success");
-      addToast(`✓ Agent registered — Initial credit: ${initialCredit} ALGO`, "success", 5000);
+      const msg = activateUsdc
+        ? `✓ Agent registered — ALGO + USDC credit lines active!`
+        : `✓ Agent registered — Initial credit: ${initialCredit} ALGO`;
+      addToast(msg, "success", 5000);
     } catch (err) {
       setTxStatus("error");
       setErrorMsg(err.message);
@@ -197,18 +201,43 @@ export default function Register() {
               {/* Live credit preview */}
               <div className="bg-accent-dim border-[3px] border-black p-4 space-y-3 rotate-1">
                 <div className="flex items-center justify-between border-b-2 border-black border-dashed pb-2">
-                  <span className="font-body font-bold text-sm text-black">Initial Credit</span>
-                  <span className="font-pixel text-xl font-bold text-black">{initialCredit} ALGO</span>
+                  <span className="font-body font-bold text-sm text-black">ALGO Draw Cap</span>
+                  <span className="font-pixel text-xl font-bold text-black">0.500000 ALGO</span>
                 </div>
                 <div className="flex items-center justify-between border-b-2 border-black border-dashed pb-2">
-                  <span className="font-body font-bold text-sm text-black">Max Credit</span>
-                  <span className="font-pixel text-xl font-bold text-black">{maxCredit} ALGO</span>
+                  <span className="font-body font-bold text-sm text-black">Per-Draw Limit</span>
+                  <span className="font-pixel text-xl font-bold text-black">0.100000 ALGO</span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between border-b-2 border-black border-dashed pb-2">
                   <span className="font-body font-bold text-sm text-black">Multiplier</span>
-                  <span className="bg-white border-2 border-black px-2 font-pixel text-xl font-bold text-black">2× → 10×</span>
+                  <span className="bg-white border-2 border-black px-2 font-pixel text-xl font-bold text-black">T0 → T3</span>
                 </div>
+                {activateUsdc && (
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="font-body font-bold text-sm text-black">USDC Credit Line</span>
+                    <span className="font-pixel text-lg font-bold" style={{ color: "#2775CA" }}>✓ Auto-activated</span>
+                  </div>
+                )}
               </div>
+
+              {/* USDC auto-activation checkbox */}
+              <label
+                className="flex items-center gap-3 cursor-pointer px-3 py-3 bg-white border-[3px] border-black shadow-brutalist-sm -rotate-1 hover:rotate-0 transition-transform"
+                htmlFor="activate-usdc-checkbox"
+              >
+                <input
+                  id="activate-usdc-checkbox"
+                  type="checkbox"
+                  checked={activateUsdc}
+                  onChange={(e) => setActivateUsdc(e.target.checked)}
+                  className="w-5 h-5 accent-[#2775CA] cursor-pointer"
+                />
+                <div className="flex-1">
+                  <span className="font-display font-black text-sm text-black uppercase">Also activate USDC credit</span>
+                  <p className="font-body text-xs text-gray-600 mt-0.5">Auto-borrows 1 ALGO from your credit line to stake on the USDC contract. No extra cost.</p>
+                </div>
+                <span className="font-pixel text-xs px-2 py-0.5 border-2 border-black" style={{ background: "#2775CA", color: "#fff" }}>$</span>
+              </label>
 
               <StepIndicator currentStep={currentStep} />
 
@@ -244,14 +273,14 @@ export default function Register() {
               </h2>
               <div className="bg-white border-[3px] border-black p-6 shadow-brutalist -rotate-2">
                 <p className="font-hand text-2xl font-bold text-black mb-1">
-                  Initial Credit Limit
+                  {activateUsdc ? "ALGO + USDC Credit Lines" : "ALGO Credit Line"}
                 </p>
-                <p className="font-pixel text-4xl font-black text-black">
-                  {initialCredit} ALGO
+                <p className="font-pixel text-3xl font-black text-black">
+                  Active ✓
                 </p>
               </div>
               <p className="font-hand text-2xl font-bold text-accent-hover mt-8 animate-pulse">
-                Redirecting to Terminal...
+                Redirecting to Dashboard...
               </p>
             </div>
           )}

@@ -98,6 +98,7 @@ def _make_mock_agent(
     }
     agent.repay.return_value = {"txid": "TXID_REPAY", "repaid_microalgo": 1_001}
     agent.record_payment.return_value = 0  # tier 0
+    agent.record_payment_usdc.return_value = 0  # tier 0
 
     return agent
 
@@ -367,8 +368,8 @@ class TestBloopX402Client:
             )
 
         assert response.status_code == 200
-        # record_payment should have been called
-        agent.record_payment.assert_called_once()
+        # record_payment_usdc should have been called
+        agent.record_payment_usdc.assert_called_once()
 
 
     def test_failed_payment_does_not_call_record_payment(self):
@@ -399,8 +400,8 @@ class TestBloopX402Client:
                     client.arequest("GET", "https://x402.goplausible.xyz/examples/weather")
                 )
 
-        # record_payment must NOT have been called on failure
-        agent.record_payment.assert_not_called()
+        # record_payment_usdc must NOT have been called on failure
+        agent.record_payment_usdc.assert_not_called()
 
 
     # ── USDC conversion ──────────────────────────────────────────────────────
@@ -420,9 +421,20 @@ class TestBloopX402Client:
     # ── Bloopa credit draw ───────────────────────────────────────────────────
 
     def test_credit_draw_called_with_correct_args(self):
-        """agent.draw() should be called with microALGO equivalent."""
-        agent = _make_mock_agent()
+        """agent.draw() should be called with microALGO equivalent when ALGO credit fallback is used."""
+        agent = _make_mock_agent(usdc_balance=0)
         client = self._make_client(agent, max_spend_per_call=100_000)
+
+        # Mock credit availability
+        agent.get_usdc_position.return_value = {"stake_amount": 0} # USDC credit line inactive
+        agent.get_position.return_value = {
+            "stake_amount": 1_000_000,
+            "outstanding": 0,
+            "tier_max_draw": 10_000_000,
+            "payment_count": 0,
+        }
+        client._tinyman.estimate_algo_for_usdc = MagicMock(return_value=5_000)
+        client._tinyman.swap_algo_to_usdc = MagicMock()
 
         # 2000 μUSDC * 2.5 = 5000 μALGO — use real GoPlausible format
         mock_402 = MagicMock()
@@ -447,6 +459,41 @@ class TestBloopX402Client:
         agent.draw.assert_called_once()
         call_kwargs = agent.draw.call_args[1]
         assert call_kwargs["amount_microalgo"] == 5_000
+
+    def test_usdc_credit_draw_called_when_usdc_credit_available(self):
+        """When USDC credit is available, agent.draw_usdc() should be called."""
+        agent = _make_mock_agent(usdc_balance=0)
+        client = self._make_client(agent, max_spend_per_call=100_000)
+
+        # Mock USDC credit available
+        agent.get_usdc_position.return_value = {
+            "stake_amount": 1_000_000,
+            "usdc_outstanding": 0,
+            "usdc_treasury_balance": 10_000_000,
+            "usdc_tier_max_draw": 1_000_000,
+        }
+
+        mock_402 = MagicMock()
+        mock_402.status_code = 402
+        mock_402.json.return_value = _make_real_402_body(amount=2_000)
+
+        mock_200 = MagicMock()
+        mock_200.status_code = 200
+
+        with patch("httpx.AsyncClient") as mock_http_cls, \
+             patch.object(client, "_build_x_payment_header",
+                          new=AsyncMock(return_value="HDR")):
+            mock_http = AsyncMock()
+            mock_http.__aenter__ = AsyncMock(return_value=mock_http)
+            mock_http.__aexit__ = AsyncMock(return_value=False)
+            mock_http.request = AsyncMock(side_effect=[mock_402, mock_200])
+            mock_http_cls.return_value = mock_http
+
+            asyncio.run(client.arequest("GET", "https://example.x402.goplausible.xyz/"))
+
+        agent.draw_usdc.assert_called_once()
+        call_kwargs = agent.draw_usdc.call_args[1]
+        assert call_kwargs["amount_microusdc"] == 2_000
 
 
     # ── opt-in ───────────────────────────────────────────────────────────────

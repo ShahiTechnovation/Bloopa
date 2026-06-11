@@ -106,7 +106,7 @@ print(f"Clear program:    {len(clear_bytes)} bytes")
 # Bloopa local state:  9 × uint64, 0 × bytes
 # Bloopa global state: 3 × uint64, 1 × bytes
 global_schema = transaction.StateSchema(num_uints=3, num_byte_slices=1)
-local_schema = transaction.StateSchema(num_uints=9, num_byte_slices=0)
+local_schema  = transaction.StateSchema(num_uints=9, num_byte_slices=0)
 
 # ──────────────────────────────────────────────
 # STEP 6 — Deploy with idempotency check
@@ -268,5 +268,6 @@ print(f"Deployer:         {deployer_address}")
 print(f"Treasury balance: {final_balance} microALGO ({final_balance / 1_000_000:.6f} ALGO)")
 print(f"Explorer:         https://testnet.explorer.perawallet.app/application/{APP_ID}/")
 print("=" * 50)
+
 print(f"\nNext step: copy APP_ID into src/utils/contract.js")
 print(f"  export const APP_ID = {APP_ID};")

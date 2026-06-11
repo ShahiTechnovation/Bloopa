@@ -601,14 +601,80 @@ class BloopX402Client:
             if amount_micro_usdc > self.max_spend_per_call:
                 raise BloopX402SpendLimitExceeded(amount_micro_usdc, self.max_spend_per_call)
 
-            # ── Ensure USDC balance ─────────────────────────────────────────
-            if self.auto_swap:
-                self._ensure_usdc_balance(amount_micro_usdc)
-
-            # ── Bloopa credit draw ──────────────────────────────────────────
-            micro_algo_equiv = int(amount_micro_usdc * self.usdc_to_algo_ratio)
+            # ── Ensure USDC balance / Credit Draw (no double spending loophole) ────
             task_desc = f"{self.task_description_prefix}: {method} {url}"
-            self._do_credit_draw(micro_algo_equiv, task_desc)
+            current_usdc = self._get_usdc_balance()
+
+            if current_usdc >= amount_micro_usdc:
+                # 1. Wallet has enough USDC. Pay directly.
+                logger.debug("Wallet has enough USDC. Paying directly from wallet balance.")
+            else:
+                # 2. Wallet does not have enough USDC. Check if USDC credit is available.
+                usdc_credit_available = False
+                try:
+                    usdc_pos = self.agent.get_usdc_position()
+                    usdc_registered = usdc_pos.get("stake_amount", 0) > 0
+                    usdc_has_no_debt = usdc_pos.get("usdc_outstanding", 0) == 0
+                    usdc_treasury_has_funds = usdc_pos.get("usdc_treasury_balance", 0) >= amount_micro_usdc
+                    usdc_within_cap = amount_micro_usdc <= usdc_pos.get("usdc_tier_max_draw", 0)
+
+                    usdc_credit_available = (
+                        usdc_registered and
+                        usdc_has_no_debt and
+                        usdc_treasury_has_funds and
+                        usdc_within_cap
+                    )
+                except Exception as e:
+                    logger.warning("Failed to check USDC credit position: %s", e)
+
+                if usdc_credit_available:
+                    logger.info("USDC credit line is available. Drawing USDC credit...")
+                    self.agent.draw_usdc(
+                        amount_microusdc=amount_micro_usdc,
+                        task_description=task_desc,
+                        expected_return_microusdc=amount_micro_usdc,
+                    )
+                else:
+                    # 3. USDC credit not available. Fallback to ALGO credit.
+                    logger.info("USDC credit line unavailable. Checking ALGO credit line...")
+                    algo_needed = self._tinyman.estimate_algo_for_usdc(amount_micro_usdc)
+
+                    algo_credit_available = False
+                    try:
+                        algo_pos = self.agent.get_position()
+                        algo_registered = algo_pos.get("stake_amount", 0) > 0
+                        algo_has_no_debt = algo_pos.get("outstanding", 0) == 0
+                        algo_within_cap = algo_needed <= algo_pos.get("tier_max_draw", 0)
+
+                        algo_credit_available = (
+                            algo_registered and
+                            algo_has_no_debt and
+                            algo_within_cap
+                        )
+                    except Exception as e:
+                        logger.warning("Failed to check ALGO credit position: %s", e)
+
+                    if algo_credit_available:
+                        logger.info("ALGO credit line is available. Drawing ALGO credit to swap to USDC...")
+                        self.agent.draw(
+                            amount_microalgo=algo_needed,
+                            task_description=task_desc,
+                            expected_return_microalgo=algo_needed,
+                        )
+                        # Swap the drawn ALGO to USDC
+                        self._tinyman.swap_algo_to_usdc(
+                            sender_address=self.agent.address,
+                            private_key=self.agent.private_key,
+                            algo_in_micro=algo_needed,
+                            min_usdc_out_micro=amount_micro_usdc - current_usdc,
+                        )
+                    else:
+                        # 4. Fallback to swapping own ALGO if auto_swap=True
+                        if self.auto_swap:
+                            logger.warning("No credit available. Swapping own ALGO to USDC out-of-pocket...")
+                            self._ensure_usdc_balance(amount_micro_usdc)
+                        else:
+                            raise BloopaCreditDenied("No credit line available (insufficient stake, outstanding debt, or cap exceeded) and auto-swap disabled.")
 
             # ── Build X-PAYMENT header ──────────────────────────────────────
             x_payment = await self._build_x_payment_header(
@@ -918,24 +984,22 @@ class BloopX402Client:
 
     def _do_record_payment(self, micro_usdc: int) -> None:
         """
-        Call agent.record_payment() after a successful x402 payment.
+        Call agent.record_payment_usdc() after a successful x402 payment.
 
-        Converts the USDC payment amount to microALGO equivalent and records
-        it on-chain to build the agent's Bloopa credit tier history.
+        Records the payment on the USDC contract to build USDC tier history.
 
         Args:
             micro_usdc: microUSDC amount that was successfully paid.
         """
-        micro_algo = max(int(micro_usdc * self.usdc_to_algo_ratio), 1_000)
         try:
-            new_tier = self.agent.record_payment(micro_algo)
+            new_tier = self.agent.record_payment_usdc(micro_usdc)
             logger.info(
-                "record_payment: %d μUSDC paid → new Bloopa tier %d",
+                "record_payment_usdc: %d μUSDC paid → new USDC Bloopa tier %d",
                 micro_usdc, new_tier,
             )
         except Exception as exc:
-            # Non-fatal: don't fail the response just because record_payment errored
-            logger.warning("agent.record_payment() failed (non-fatal): %s", exc)
+            # Non-fatal: don't fail the response just because record_payment_usdc errored
+            logger.warning("agent.record_payment_usdc() failed (non-fatal): %s", exc)
 
     # ── X-PAYMENT header construction ──────────────────────────────────────────
 

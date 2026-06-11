@@ -39,7 +39,11 @@ from .exceptions import (
     BloopX402SpendLimitExceeded,
     BloopX402SetupError,
 )
-from .criteria import get_tier, calculate_interest, tier_name
+from .criteria import (
+    get_tier, calculate_interest, tier_name,
+    calculate_interest_usdc, max_draw_usdc, daily_cap_usdc,
+    USDC_ASA_ID_TESTNET, USDC_ASA_ID_MAINNET,
+)
 
 
 def __getattr__(name: str):
@@ -68,6 +72,12 @@ __all__ = [
     "get_tier",
     "calculate_interest",
     "tier_name",
+    # USDC criteria
+    "calculate_interest_usdc",
+    "max_draw_usdc",
+    "daily_cap_usdc",
+    "USDC_ASA_ID_TESTNET",
+    "USDC_ASA_ID_MAINNET",
     # x402 (lazy — requires pip install "bloopa-sdk[x402]")
     "BloopX402Client",
     "BloopX402PaymentError",

@@ -25,6 +25,14 @@
   --font-body:      "DM Sans", sans-serif;
   --font-pixel:     "VT323", monospace;
   --font-hand:      "Caveat", cursive;
+
+  /* USDC brand colors — Circle's official teal palette */
+  --usdc-primary:   #2775CA;
+  --usdc-secondary: #1A5FA8;
+  --usdc-teal:      #26A17B;
+  --usdc-teal-dim:  #1A8068;
+  --usdc-dim:       rgba(39, 117, 202, 0.08);
+  --usdc-border:    rgba(39, 117, 202, 0.25);
 }
 
 * {
