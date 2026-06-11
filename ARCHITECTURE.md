@@ -3,7 +3,7 @@
 > **Repository:** `ShahiTechnovation/Bloopa`  
 > **Stack:** Algorand (AVM) · Python 3.11+ · React 18 · x402  
 > **Network:** Algorand Testnet (App ID `762466410`)  
-> **Version:** SDK v0.2.0 — analysed line-by-line, June 2026
+> **Version:** SDK v0.2.0 
 
 ---
 
