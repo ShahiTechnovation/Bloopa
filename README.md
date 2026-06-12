@@ -2,8 +2,8 @@
 
 > **The first protocol where an LLM decides if an AI agent's loan is responsible before it's issued.**
 
-**Live on Algorand Testnet · App ID: 762466410**  
-[View on Explorer](https://testnet.explorer.perawallet.app/application/762466410) · [bloopa.xyz](https://bloopa.xyz)
+**Live on Algorand Testnet · App ID: 764393317**  
+[View on Explorer](https://testnet.explorer.perawallet.app/application/764393317) · [bloopa.xyz](https://bloopa.xyz)
 
 ---
 
@@ -31,7 +31,7 @@ load_dotenv(".bloopa.env")
 
 agent = BloopaCreditAgent(
     mnemonic_phrase=os.environ["BLOOPA_MNEMONIC"],
-    app_id=int(os.environ["BLOOPA_APP_ID"]),  # 762466410 testnet
+    app_id=int(os.environ["BLOOPA_APP_ID"]),  # 764393317 testnet
 )
 
 try:
@@ -55,7 +55,7 @@ except BloopaCreditDenied as e:
 
 **Run the full demo**
 ```bash
-VENICE_API_KEY=your-key python demo/demo_with_skill.py
+VENICE_API_KEY=your-key python demo/SDK_DEMO.py
 ```
 
 ---
@@ -75,8 +75,8 @@ What makes Bloopa different is the risk oracle. Before any draw reaches the chai
 ### Approved draw — ETH price fetch
 
 ```
-bloopa-agent v0.2.0 | testnet | app 762466410
-agent: 7XQ3...DEMO
+bloopa-agent v0.2.0 | testnet | app 764393317
+agent: STOL...DEMO
 
 fetching position...
   stake_amount:   1000000 uALGO
@@ -109,8 +109,8 @@ repaying 50001 uALGO...
 ### Denied draw — high-risk arbitrage
 
 ```
-bloopa-agent v0.2.0 | testnet | app 762466410
-agent: 7XQ3...DEMO
+bloopa-agent v0.2.0 | testnet | app 764393317
+agent: STOL...DEMO
 
 oracle evaluating draw request (500000 uALGO)...
   task: Speculative arbitrage on unaudited new DEX contracts
@@ -212,7 +212,7 @@ python demo/intent_demo.py
 
 **Deploy the Router:**
 ```bash
-ADMIN_MNEMONIC="..." BLOOPA_APP_ID=762466410 python contracts/deploy_router.py
+ADMIN_MNEMONIC="..." BLOOPA_APP_ID=764393317 python contracts/deploy_router.py
 ```
 
 **No equivalent exists on Algorand.** Tinyman, Pact, and Folks Finance are AMMs
@@ -244,10 +244,10 @@ pip install -e "./bloopa_sdk"
 
 # Set environment variables
 cp contracts/.env.example contracts/.env
-# Fill in: AGENT_MNEMONIC, BLOOPA_APP_ID=762466410, VENICE_API_KEY
+# Fill in: AGENT_MNEMONIC, BLOOPA_APP_ID=764393317, VENICE_API_KEY
 
 # Run demo
-python demo/demo_with_skill.py
+python demo/SDK_DEMO.py
 
 # Run tests
 python tests/test_sdk.py
@@ -263,7 +263,7 @@ from bloopa_sdk import BloopaCreditAgent, BloopaCreditDenied
 
 agent = BloopaCreditAgent(
     mnemonic_phrase=os.environ["AGENT_MNEMONIC"],
-    app_id=762466410,
+    app_id=764393317,
 )
 
 # Oracle runs internally — Venice AI or Anthropic evaluates 4 criteria
@@ -295,7 +295,7 @@ The LLM provider is controlled by the `ORACLE_PROVIDER` environment variable.
 ```bash
 export ORACLE_PROVIDER=venice
 export VENICE_API_KEY=your-venice-key
-python demo/demo_with_skill.py
+python demo/SDK_DEMO.py
 ```
 
 Model: `llama-3.3-70b`. No extra install required (`openai` package already included).
@@ -306,7 +306,7 @@ Model: `llama-3.3-70b`. No extra install required (`openai` package already incl
 export ORACLE_PROVIDER=anthropic
 export ANTHROPIC_API_KEY=sk-ant-...
 pip install -e "./bloopa_sdk[anthropic]"
-python demo/demo_with_skill.py
+python demo/SDK_DEMO.py
 ```
 
 Model: `claude-haiku-4-5-20251001`. Uses `client.beta.messages.parse()` for structured output.
@@ -315,8 +315,8 @@ Model: `claude-haiku-4-5-20251001`. Uses `client.beta.messages.parse()` for stru
 
 ## Contract Reference
 
-**Deployed:** Algorand Testnet · App ID: `762466410`  
-[View on Pera Explorer →](https://testnet.explorer.perawallet.app/application/762466410)
+**Deployed:** Algorand Testnet · App ID: `764393317`  
+[View on Pera Explorer →](https://testnet.explorer.perawallet.app/application/764393317)
 
 ### ABI Methods
 

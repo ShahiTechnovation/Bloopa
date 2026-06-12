@@ -306,7 +306,7 @@ export default function LandingPage({ onLaunchApp }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full mb-10">
             <div className="brutalist-card p-5 bg-white flex flex-col items-center">
               <span className="font-hand text-lg font-bold text-text-secondary mb-1">App ID</span>
-              <span className="font-pixel text-2xl font-bold text-black tracking-tight">762466410</span>
+              <span className="font-pixel text-2xl font-bold text-black tracking-tight">764393317</span>
             </div>
             <div className="brutalist-card p-5 bg-accent flex flex-col items-center">
               <span className="font-hand text-lg font-bold text-black mb-1">Network</span>
@@ -320,7 +320,7 @@ export default function LandingPage({ onLaunchApp }) {
 
           {/* Explorer link */}
           <a
-            href="https://testnet.explorer.perawallet.app/application/762466410"
+            href="https://testnet.explorer.perawallet.app/application/764393317"
             target="_blank"
             rel="noopener noreferrer"
             className="border-[3px] border-black px-6 py-2 font-display font-black text-base text-black shadow-brutalist-sm hover:bg-warning transition-all uppercase tracking-wider"

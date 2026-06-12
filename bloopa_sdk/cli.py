@@ -44,11 +44,11 @@ ALGOD_URLS: dict[str, str] = {
 }
 
 BLOOPA_APP_IDS: dict[str, int | None] = {
-    "testnet": 762466410,
+    "testnet": 764393317,
     "mainnet": None,  # mainnet TBD
 }
 
-FAUCET_URL = "https://testnet.algoexplorer.io/dispenser"
+FAUCET_URL = "https://bank.testnet.algorand.network/"
 
 STAKE_DEFAULT = 1_000_000  # 1 ALGO in microALGO
 
@@ -135,7 +135,7 @@ def init(network: str, stake: int) -> None:
         click.echo(f"      Error: {exc}")
         sys.exit(1)
 
-    app_id: int = BLOOPA_APP_IDS[network] or 762466410
+    app_id: int = BLOOPA_APP_IDS[network] or 764393317
     private_key_algosdk = mnemonic.to_private_key(mnemonic_phrase)
     signer = AccountTransactionSigner(private_key_algosdk)
 
@@ -194,7 +194,7 @@ def init(network: str, stake: int) -> None:
             )
             click.echo(f"      Registered! Txn: {txid}")
             click.echo(
-                f"      Explorer: https://testnet.algoexplorer.io/tx/{txid}"
+                f"      Explorer: https://testnet.explorer.perawallet.app/tx/{txid}"
             )
         except Exception as exc:
             click.echo(f"      Registration failed: {exc}")

@@ -11,7 +11,7 @@ Core public surface::
 
     from bloopa_sdk import BloopaCreditAgent, BloopaCreditDenied
 
-    agent = BloopaCreditAgent(mnemonic_phrase="...", app_id=762466410)
+    agent = BloopaCreditAgent(mnemonic_phrase="...", app_id=764393317)
     try:
         result = agent.draw(
             amount_microalgo=50_000,

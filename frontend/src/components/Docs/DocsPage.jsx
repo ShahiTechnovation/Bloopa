@@ -566,7 +566,7 @@ Done. Bloopa agent ready.`}
 {`BLOOPA_ADDRESS=7XQ3...DEMO
 BLOOPA_MNEMONIC="word1 word2 word3 ... word25"
 BLOOPA_NETWORK=testnet
-BLOOPA_APP_ID=762466410
+BLOOPA_APP_ID=764393317
 ALGOD_URL=https://testnet-api.algonode.cloud
 VENICE_API_KEY=your-venice-api-key`}
         </CodeBlock>
@@ -578,7 +578,7 @@ VENICE_API_KEY=your-venice-api-key`}
           Run the combination skill and credit demo which demonstrates an approved price-feed check and a denied speculative check.
         </BodyText>
         <CodeBlock lang="bash">
-{`python demo/demo_with_skill.py`}
+{`python demo/SDK_DEMO.py`}
         </CodeBlock>
 
         <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 18, marginBottom: 8 }} id="run-tests">
@@ -788,7 +788,7 @@ function BloopaCreditAgentDocs() {
           <div className="absolute -top-3 right-3 bg-white text-black brutal-border px-2 py-1 font-label-mono text-[10px] rotate-2 font-bold">PYTHON</div>
           <pre className="overflow-x-auto m-0"><code className="font-mono">{`agent = BloopaCreditAgent(
     mnemonic_phrase="word1 word2 word3 ... word25",
-    app_id=762466410,
+    app_id=764393317,
     algod_url="https://testnet-api.algonode.cloud",
     demo_mode=True
 )`}</code></pre>
@@ -802,7 +802,7 @@ function BloopaCreditAgentDocs() {
             </li>
             <li className="flex flex-col md:flex-row gap-4 md:items-start border-b border-gray-200 pb-4">
               <div className="w-48 shrink-0"><span className="bg-gray-100 border-2 border-black px-2 py-1 font-code-block text-[12px] font-bold">app_id</span></div>
-              <div className="flex-1"><span className="text-gray-500 font-label-mono text-[10px] bg-gray-200 px-1 mr-2">int</span> Target app deployment. Default: <code>762466410</code> (Testnet).</div>
+              <div className="flex-1"><span className="text-gray-500 font-label-mono text-[10px] bg-gray-200 px-1 mr-2">int</span> Target app deployment. Default: <code>764393317</code> (Testnet).</div>
             </li>
             <li className="flex flex-col md:flex-row gap-4 md:items-start border-b border-gray-200 pb-4">
               <div className="w-48 shrink-0"><span className="bg-gray-100 border-2 border-black px-2 py-1 font-code-block text-[12px] font-bold">algod_url</span></div>
@@ -1009,7 +1009,7 @@ function AbiView() {
       </BodyText>
 
       <Callout type="warning" title="Testnet Deployment">
-        Current App ID: <strong>762466410</strong>. Active Contract Escrow Address: <code>Z2AJEBCQBWD5VOYVYIE3LUCCFVRY2H2ZMHAQEEG34ZKCNH7NACTXBGGGQY</code>.
+        Current App ID: <strong>764393317</strong>. Active Contract Escrow Address: <code>4PORQ4S62ZTSIDT2W5KSEDUJS2G4ZD5TH44YN4MH74BMQWDPBPYXQIGBVA</code>.
       </Callout>
 
       <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 20, margin: "24px 0 12px" }} id="abi-specs">
@@ -1326,7 +1326,7 @@ print(response.json())  # {"price": 2814.22}
       </CodeBlock>
 
       <Callout type="warning" title="Testnet Note">
-        x402 integration is fully functional on Algorand Testnet. App ID: <strong>762466410</strong>. Each successful x402 payment increments <code>payment_count</code> on-chain and counts toward tier progression.
+        x402 integration is fully functional on Algorand Testnet. App ID: <strong>764393317</strong>. Each successful x402 payment increments <code>payment_count</code> on-chain and counts toward tier progression.
       </Callout>
     </div>
   );
@@ -1455,10 +1455,10 @@ listener.run_forever(on_intent_callback=executor.handle_intent)`}
       </BodyText>
       <CodeBlock lang="bash">
 {`# 1. Deploy the router contract
-ADMIN_MNEMONIC="..." BLOOPA_APP_ID=762466410 python contracts/deploy_router.py
+ADMIN_MNEMONIC="..." BLOOPA_APP_ID=764393317 python contracts/deploy_router.py
 
 # 2. Run the intent solver lifecycle demo
-python demo/intent_demo.py`}
+python demo/SDK_DEMO.py`}
       </CodeBlock>
     </div>
   );

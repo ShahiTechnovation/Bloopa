@@ -22,7 +22,7 @@ pip install -e "./bloopa_sdk[anthropic]"
 | Variable           | Required | Notes                                      |
 |--------------------|----------|--------------------------------------------|
 | `AGENT_MNEMONIC`   | Yes      | 25-word Algorand mnemonic                  |
-| `BLOOPA_APP_ID`    | Yes      | `762466410` (testnet)                      |
+| `BLOOPA_APP_ID`    | Yes      | `764393317` (testnet)                      |
 | `VENICE_API_KEY`   | Default  | Venice AI oracle (default provider)        |
 | `ORACLE_PROVIDER`  | No       | `"venice"` (default) or `"anthropic"`      |
 | `ANTHROPIC_API_KEY`| Optional | Only if `ORACLE_PROVIDER=anthropic`        |
@@ -31,7 +31,7 @@ pip install -e "./bloopa_sdk[anthropic]"
 
 ```env
 AGENT_MNEMONIC=word1 word2 word3 ... word25
-BLOOPA_APP_ID=762466410
+BLOOPA_APP_ID=764393317
 VENICE_API_KEY=your-venice-api-key
 ORACLE_PROVIDER=venice
 ANTHROPIC_API_KEY=
@@ -67,7 +67,7 @@ load_dotenv(".bloopa.env")
 
 agent = BloopaCreditAgent(
     mnemonic_phrase=os.environ["BLOOPA_MNEMONIC"],
-    app_id=int(os.environ["BLOOPA_APP_ID"]),  # 762466410 testnet
+    app_id=int(os.environ["BLOOPA_APP_ID"]),  # 764393317 testnet
 )
 
 try:
@@ -206,7 +206,7 @@ pip install "bloopa-sdk[x402]"
 ### Prerequisites
 
 Your Bloopa wallet must have:
-- **ALGO** for transactions (get testnet ALGO at https://testnet.algoexplorer.io/dispenser)
+- **ALGO** for transactions (get testnet ALGO at https://bank.testnet.algorand.network/)
 - The client auto opts-in to USDC ASA `10458941` on first use
 - The client auto-swaps ALGO → USDC via Tinyman testnet when USDC balance is insufficient
 
@@ -218,7 +218,7 @@ from bloopa_sdk import BloopaCreditAgent, BloopX402Client
 
 agent = BloopaCreditAgent(
     mnemonic_phrase=os.environ["AGENT_MNEMONIC"],
-    app_id=762466410,  # testnet
+    app_id=764393317,  # testnet
 )
 
 # auto_opt_in=True  → opt-in to USDC ASA on first use
@@ -271,10 +271,10 @@ print(response.text)
 
 ```bash
 export AGENT_MNEMONIC="word1 word2 ... word25"
-export BLOOPA_APP_ID=762466410
+export BLOOPA_APP_ID=764393317
 export VENICE_API_KEY=your-key
 
-python demo/x402_demo.py
+python demo/SDK_DEMO.py
 ```
 
 ### Error Reference
@@ -301,6 +301,6 @@ Reference: [x402 on Algorand](https://dev.algorand.co/resources/x402-on-algorand
 
 - **PyPI**: https://pypi.org/project/bloopa-sdk/
 - **GitHub**: https://github.com/ShahiTechnovation/Bloopa
-- **Contract Explorer**: https://testnet.algoexplorer.io/application/762466410
+- **Contract Explorer**: https://testnet.explorer.perawallet.app/application/764393317
 - **Live Site**: https://bloopa.xyz
 - **Algorand Foundation x402**: https://algorand.co/solutions/agentic-commerce

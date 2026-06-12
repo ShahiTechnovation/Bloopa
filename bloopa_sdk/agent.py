@@ -152,7 +152,7 @@ class BloopaCreditAgent:
             mnemonic_phrase:
                 25-word Algorand mnemonic for the agent wallet.
             app_id:
-                Bloopa contract application ID on testnet (762466410) or
+                Bloopa contract application ID on testnet (764393317) or
                 mainnet.
             algod_url:
                 Algod REST endpoint.  Ignored if ``config`` is supplied.

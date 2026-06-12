@@ -7,7 +7,7 @@ Public interface::
 
     from bloopa_sdk import BloopaCreditAgent, BloopX402Client
 
-    agent  = BloopaCreditAgent(mnemonic_phrase="...", app_id=762466410)
+    agent  = BloopaCreditAgent(mnemonic_phrase="...", app_id=764393317)
     client = BloopX402Client(agent)          # auto opts-in to USDC ASA
 
     # One-liner pay-per-call:
@@ -419,7 +419,7 @@ class BloopX402Client:
 
         agent  = BloopaCreditAgent(
             mnemonic_phrase=os.environ["AGENT_MNEMONIC"],
-            app_id=762466410,
+            app_id=764393317,
         )
         client = BloopX402Client(agent)
 
@@ -585,12 +585,20 @@ class BloopX402Client:
                 return response
 
             # ── Parse 402 requirements ──────────────────────────────────────
-            try:
-                raw_body = response.json()
-            except Exception:
-                raise BloopX402PaymentError(
-                    "402 response body is not valid JSON — cannot parse paymentRequirements"
-                )
+            raw_body = None
+            if "payment-required" in response.headers:
+                try:
+                    raw_body = json.loads(base64.b64decode(response.headers["payment-required"]).decode("utf-8"))
+                except Exception as e:
+                    logger.warning("Failed to decode payment-required header: %s", e)
+
+            if not raw_body:
+                try:
+                    raw_body = response.json()
+                except Exception:
+                    raise BloopX402PaymentError(
+                        "402 response body is not valid JSON and payment-required header is missing/invalid"
+                    )
 
             # Normalize to flat internal format (handles both real GoPlausible
             # "accepts" array format AND simple flat test-server format)
@@ -632,7 +640,7 @@ class BloopX402Client:
                     self.agent.draw_usdc(
                         amount_microusdc=amount_micro_usdc,
                         task_description=task_desc,
-                        expected_return_microusdc=amount_micro_usdc,
+                        expected_return_microusdc=int(amount_micro_usdc * 1.5),
                     )
                 else:
                     # 3. USDC credit not available. Fallback to ALGO credit.
@@ -659,7 +667,7 @@ class BloopX402Client:
                         self.agent.draw(
                             amount_microalgo=algo_needed,
                             task_description=task_desc,
-                            expected_return_microalgo=algo_needed,
+                            expected_return_microalgo=int(algo_needed * 1.5),
                         )
                         # Swap the drawn ALGO to USDC
                         self._tinyman.swap_algo_to_usdc(
@@ -742,7 +750,7 @@ class BloopX402Client:
                     or req_network in self.network
                 ):
                     try:
-                        amount = int(req.get("maxAmountRequired", "0"))
+                        amount = int(req.get("amount", req.get("maxAmountRequired", "0")))
                     except (ValueError, TypeError):
                         amount = 0
 
@@ -902,7 +910,7 @@ class BloopX402Client:
             raise BloopX402SetupError(
                 f"Insufficient ALGO for auto-swap: need {algo_needed} μALGO "
                 f"(available: {algo_available} μALGO after 0.5 ALGO reserve). "
-                "Fund the wallet with ALGO at https://testnet.algoexplorer.io/dispenser"
+                "Fund the wallet with ALGO at https://bank.testnet.algorand.network/"
             )
 
         # Execute swap — min output = deficit (not swap_target, to handle slippage)
@@ -1041,12 +1049,12 @@ class BloopX402Client:
         """
         try:
             from x402 import x402Client as X402CoreClient
-            from x402.mechanisms.avm import ExactAvmScheme
+            from x402.mechanisms.avm.exact import ExactAvmScheme
             return await self._build_via_x402_avm_lib(
                 payment_requirements, http_client
             )
-        except ImportError:
-            logger.warning("x402-avm not installed; falling back to manual header construction")
+        except (ImportError, TypeError, Exception) as exc:
+            logger.warning("x402-avm library fallback triggered: %s; falling back to manual header construction", exc)
             return self._build_manual_x_payment_header(payment_requirements)
 
     async def _build_via_x402_avm_lib(
@@ -1064,7 +1072,7 @@ class BloopX402Client:
         - Encoding the PAYMENT-SIGNATURE header
         """
         from x402 import x402Client as X402CoreClient  # type: ignore[import]
-        from x402.mechanisms.avm import ExactAvmScheme  # type: ignore[import]
+        from x402.mechanisms.avm.exact import ExactAvmScheme  # type: ignore[import]
 
         x402_core = X402CoreClient()
         scheme = ExactAvmScheme(
@@ -1238,7 +1246,7 @@ class BloopX402Client:
             raise BloopX402PaymentError(f"Facilitator settle failed: {reason}")
 
         txid = data.get("transaction", "")
-        explorer = f"https://testnet.algoexplorer.io/tx/{txid}" if txid else ""
+        explorer = f"https://testnet.explorer.perawallet.app/tx/{txid}" if txid else ""
         logger.info("Settlement confirmed: txid=%s explorer=%s", txid, explorer)
         return txid
 
