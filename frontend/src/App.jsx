@@ -104,7 +104,7 @@ export default function App() {
 
       <main
         className="flex-1 w-full"
-        style={{ paddingTop: "56px", paddingBottom: "32px" }}
+        style={{ paddingTop: "100px", paddingBottom: "32px" }}
       >
         {view === "docs" ? (
           <DocsShell />

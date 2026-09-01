@@ -10,6 +10,7 @@ import React, { useState, useEffect } from "react";
 import { useWallet } from "../context/WalletContext.jsx";
 import { fmtAddress } from "../utils/format.js";
 import { algodClient } from "../utils/algod.js";
+import V2Banner from "./V2Banner.jsx";
 
 function LogoMark() {
   return (
@@ -56,8 +57,10 @@ export default function Header({ onLogoClick, onAppClick, onDocsClick, activeVie
   }, [showWalletMenu]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 p-2 md:p-4 md:px-6 pointer-events-none">
-      <div className="max-w-[1240px] mx-auto pointer-events-auto h-16 bg-white border-[3px] border-black shadow-brutalist flex items-center justify-between px-3 md:px-5">
+    <header className="fixed top-0 left-0 right-0 z-50 pointer-events-none flex flex-col">
+      <V2Banner />
+      <div className="p-2 md:p-4 md:px-6 w-full">
+        <div className="max-w-[1240px] mx-auto pointer-events-auto h-16 bg-white border-[3px] border-black shadow-brutalist flex items-center justify-between px-3 md:px-5">
         
         <div className="flex items-center gap-6 md:gap-10">
           <button
@@ -159,6 +162,7 @@ export default function Header({ onLogoClick, onAppClick, onDocsClick, activeVie
             </div>
           )}
         </div>
+      </div>
       </div>
     </header>
   );
